@@ -25,9 +25,9 @@ public class ClientTest {
         StatefulRedisConnection<String, String> connection = client.connect();
         RedisCommands sync = connection.sync();
 //        sync.lpush("daicy","1","2","3");
-        List<String> list = sync.lrange("daicy",0,10);
         String result = sync.set("client","lettuce");
         String value = (String) sync.get("client");
+        sync.quit();
 //        System.out.println(result);
 //        System.out.println(value);
     }

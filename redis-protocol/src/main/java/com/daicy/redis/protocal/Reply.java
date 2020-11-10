@@ -15,6 +15,9 @@ import static com.daicy.redis.protocal.Constants.*;
 
 public abstract class Reply {
 
+  public static final StatusReply PONG = new StatusReply("PONG");
+  public static final StatusReply OK = new StatusReply("OK");
+
   enum Type {
     MULTI,
     BULK,
@@ -57,7 +60,11 @@ public abstract class Reply {
 
   static class StringReply extends Reply {
     StringBuffer buf = new StringBuffer();
-    
+
+    public void set(String message) {
+      buf.append(message);
+    }
+
     public void set(byte b) {
       buf.append((char)b);
     }
@@ -74,6 +81,10 @@ public abstract class Reply {
   public static class StatusReply extends StringReply {
     StatusReply() {
       this.type = Type.STATUS;
+    }
+    StatusReply(String messge) {
+      this.type = Type.STATUS;
+      this.buf = new StringBuffer(messge);
     }
   }
 

@@ -9,10 +9,9 @@
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <modules>
-        <module>redis-remoting-netty4</module>
         <module>redis-protocol</module>
         <module>java-redis07</module>
-        <module>java-redis01</module>
+        <module>java-redis30</module>
         <module>redis-common</module>
         <module>redis-client</module>
     </modules>
@@ -22,7 +21,7 @@
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-all</artifactId>
-                <version>4.0.10.Final</version>
+                <version>4.1.53.Final</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
@@ -33,7 +32,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>20.0</version>
+                <version>RELEASE</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -45,4 +44,19 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
