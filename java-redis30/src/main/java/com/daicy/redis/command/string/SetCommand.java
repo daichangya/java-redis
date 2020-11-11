@@ -20,6 +20,11 @@ import io.netty.handler.codec.redis.RedisMessage;
 import static com.daicy.redis.RedisConstants.OK;
 
 
+/**
+ * @author daichangya
+ * SET key value [NX] [XX] [EX <seconds>] [PX <milliseconds>]
+ * http://redisdoc.com/string/set.html
+ */
 @Command("set")
 @ParamLength(2)
 public class SetCommand implements DBCommand {
@@ -33,7 +38,6 @@ public class SetCommand implements DBCommand {
     private RedisMessage onSuccess(Database db, Request request) {
         DatabaseKey key = DatabaseKey.safeKey(request.getParamStr(0));
         DatabaseValue value = DatabaseValue.string(request.getParamStr(1));
-        int a = 10/0;
         return value.equals(saveValue(db, key, value)) ? OK : FullBulkStringRedisMessage.NULL_INSTANCE;
     }
 

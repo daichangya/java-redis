@@ -5,7 +5,7 @@
 package com.daicy.redis.command;
 
 
-import com.daicy.redis.DBServerContext;
+import com.daicy.redis.RedisServerContext;
 import com.daicy.redis.Request;
 import com.daicy.redis.annotation.*;
 import com.daicy.redis.database.DataType;
@@ -55,7 +55,8 @@ public class DBCommandWrapper implements RedisCommand {
     @Override
     public RedisMessage execute(Request request) {
         // FIXME: ugly piece of code, please refactor
-        Database db = DBServerContext.database;
+        Database db = RedisServerContext.getInstance().getDatabase(
+                request.getClientSession().getDatabaseNum());
         if (request.getLength() < params) {
             return new ErrorRedisMessage("ERR wrong number of arguments for '" + request.getCommand() + "' command");
         }

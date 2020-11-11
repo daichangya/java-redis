@@ -1,2 +1,3 @@
 com.daicy.redis.command.string.GetCommand
 com.daicy.redis.command.string.SetCommand
+com.daicy.redis.command.db.SelectCommand

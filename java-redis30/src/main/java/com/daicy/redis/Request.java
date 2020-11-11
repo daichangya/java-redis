@@ -8,6 +8,12 @@ package com.daicy.redis;
 import io.netty.handler.codec.redis.ArrayRedisMessage;
 import io.netty.handler.codec.redis.RedisMessage;
 
+
+/**
+ * @author daichangya
+ * https://github.com/redis/redis/blob/3.0/src/redis.h
+ * redisClient
+ */
 public interface Request {
     String getCommand();
 
@@ -18,6 +24,8 @@ public interface Request {
     String getParamStr(int i);
 
     int getLength();
+
+    RedisClientSession getClientSession();
 
     boolean isEmpty();
 

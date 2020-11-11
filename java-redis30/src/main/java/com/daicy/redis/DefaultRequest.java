@@ -4,12 +4,16 @@
  */
 package com.daicy.redis;
 
+import com.daicy.redis.utils.ByteBufUtils;
+import com.daicy.remoting.transport.netty4.ClientSession;
 import com.google.common.base.Preconditions;
-import io.netty.buffer.ByteBufHolder;
 import io.netty.handler.codec.redis.ArrayRedisMessage;
 import io.netty.handler.codec.redis.BulkStringRedisContent;
+import io.netty.handler.codec.redis.FullBulkStringRedisMessage;
 import io.netty.handler.codec.redis.RedisMessage;
 import io.netty.util.CharsetUtil;
+
+import java.util.List;
 
 
 public class DefaultRequest implements Request {
@@ -18,10 +22,17 @@ public class DefaultRequest implements Request {
 
     private final ArrayRedisMessage params;
 
+    private final RedisClientSession clientSession;
 
-    public DefaultRequest(String command, ArrayRedisMessage params) {
-        this.command = Preconditions.checkNotNull(command);
-        this.params = Preconditions.checkNotNull(params);
+
+    public DefaultRequest(ArrayRedisMessage arrayRedisMessage, RedisClientSession clientSession) {
+        List<RedisMessage> messageList = arrayRedisMessage.children();
+        FullBulkStringRedisMessage fullBulkStringRedisMessage =
+                (FullBulkStringRedisMessage) messageList.get(0);
+        byte[] name = ByteBufUtils.getBytes(fullBulkStringRedisMessage.content());
+        this.command = Preconditions.checkNotNull(new String(name).toLowerCase());
+        this.params = Preconditions.checkNotNull(new ArrayRedisMessage(messageList.subList(1, messageList.size())));
+        this.clientSession = Preconditions.checkNotNull(clientSession);
     }
 
     @Override
@@ -39,7 +50,7 @@ public class DefaultRequest implements Request {
         if (i < params.children().size()) {
             RedisMessage redisMessage = params.children().get(i);
             if (redisMessage instanceof BulkStringRedisContent) {
-                return ((BulkStringRedisContent) redisMessage).copy();
+                return ((BulkStringRedisContent) redisMessage).duplicate();
             }
             return redisMessage;
         }
@@ -63,6 +74,11 @@ public class DefaultRequest implements Request {
     @Override
     public int getLength() {
         return params.children().size();
+    }
+
+    @Override
+    public RedisClientSession getClientSession() {
+        return clientSession;
     }
 
     @Override
