@@ -1,5 +1,6 @@
 package com.daicy.redis;
 
+import io.netty.handler.codec.redis.ErrorRedisMessage;
 import io.netty.handler.codec.redis.FixedRedisMessagePool;
 import io.netty.handler.codec.redis.IntegerRedisMessage;
 import io.netty.handler.codec.redis.SimpleStringRedisMessage;
@@ -21,4 +22,8 @@ public class RedisConstants {
 
     public static final SimpleStringRedisMessage QUIT =
             FixedRedisMessagePool.INSTANCE.getSimpleString("QUIT");
+
+
+    public static final ErrorRedisMessage TYPE_ERROR =
+            FixedRedisMessagePool.INSTANCE.getError("WRONGTYPE Operation against a key holding the wrong kind of value");
 }

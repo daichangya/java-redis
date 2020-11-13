@@ -7,6 +7,8 @@ package com.daicy.redis.storage;
 
 import com.google.common.collect.ImmutableSet;
 
+import java.util.function.BiFunction;
+
 
 public interface Dict {
 
@@ -30,23 +32,23 @@ public interface Dict {
 //
 //  ImmutableSet<Tuple2<DictKey, DictValue>> entrySet();
 //
-//  default SafeString getString(SafeString key) {
+//  default String getString(String key) {
 //    return getOrDefault(safeKey(key), DictValue.EMPTY_STRING).getString();
 //  }
 //
-//  default ImmutableList<SafeString> getList(SafeString key) {
+//  default ImmutableList<String> getList(String key) {
 //    return getOrDefault(safeKey(key), DictValue.EMPTY_LIST).getList();
 //  }
 //
-//  default ImmutableSet<SafeString> getSet(SafeString key) {
+//  default ImmutableSet<String> getSet(String key) {
 //    return getOrDefault(safeKey(key), DictValue.EMPTY_SET).getSet();
 //  }
 //
-//  default NavigableSet<Entry<Double, SafeString>> getSortedSet(SafeString key) {
+//  default NavigableSet<Entry<Double, String>> getSortedSet(String key) {
 //    return getOrDefault(safeKey(key), DictValue.EMPTY_ZSET).getSortedSet();
 //  }
 //
-//  default ImmutableMap<SafeString, SafeString> getHash(SafeString key) {
+//  default ImmutableMap<String, String> getHash(String key) {
 //    return getOrDefault(safeKey(key), DictValue.EMPTY_HASH).getHash();
 //  }
 
@@ -62,17 +64,17 @@ public interface Dict {
 //    return oldValue;
 //  }
 //
-//  default DictValue merge(DictKey key, DictValue value,
-//                              BiFunction<DictValue, DictValue, DictValue> remappingFunction) {
-//    DictValue oldValue = get(key);
-//    DictValue newValue = oldValue == null ? value : remappingFunction.apply(oldValue, value);
-//    if(newValue == null) {
-//      remove(key);
-//    } else {
-//      put(key, newValue);
-//    }
-//    return newValue;
-//  }
+  default DictValue merge(DictKey key, DictValue value,
+                              BiFunction<DictValue, DictValue, DictValue> remappingFunction) {
+    DictValue oldValue = get(key);
+    DictValue newValue = oldValue == null ? value : remappingFunction.apply(oldValue, value);
+    if(newValue == null) {
+      remove(key);
+    } else {
+      put(key, newValue);
+    }
+    return newValue;
+  }
 //
 //  default DictValue getOrDefault(DictKey key, DictValue defaultValue) {
 //    DictValue value = get(key);

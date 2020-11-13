@@ -16,7 +16,7 @@
         <module>redis-jmh</module>
         <module>remoting-netty4</module>
         <module>redis-storage</module>
-        <module>rediso-riginal</module>
+        <module>rediso-original</module>
     </modules>
 
     <properties>

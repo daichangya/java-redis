@@ -32,14 +32,14 @@ public class ExpireCommand implements DBCommand {
                 return ZERO;
             }
             db.getExpires().put(dictKey, DictValue.toLong(
-                    DictUtils.toInstantSs(parsetTtl(request.getParamStr(1))).toEpochMilli()));
+                    parsetTtl(request.getParamStr(1))));
             return ONE;
         } catch (NumberFormatException e) {
             return new ErrorRedisMessage("ERR value is not an integer or out of range");
         }
     }
 
-    private long parsetTtl(String param) {
-        return Long.parseLong(param);
+    protected long parsetTtl(String param) {
+        return DictUtils.toInstantSs(Long.parseLong(param)).toEpochMilli();
     }
 }

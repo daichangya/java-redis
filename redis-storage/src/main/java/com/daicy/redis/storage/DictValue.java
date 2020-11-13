@@ -5,20 +5,18 @@
 package com.daicy.redis.storage;
 
 
-import com.daicy.redis.bean.DictType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.NavigableSet;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
-import static java.time.Instant.now;
 import static java.util.Objects.requireNonNull;
 
 public class DictValue implements Serializable {
@@ -26,7 +24,7 @@ public class DictValue implements Serializable {
   private static final long serialVersionUID = -5178953336530559139L;
 
   public static final DictValue EMPTY_STRING = string("");
-//  public static final DictValue EMPTY_LIST = list();
+  public static final DictValue EMPTY_LIST = list();
 //  public static final DictValue EMPTY_SET = set();
 //  public static final DictValue EMPTY_ZSET = zset();
 //  public static final DictValue EMPTY_HASH = hash();
@@ -55,7 +53,7 @@ public class DictValue implements Serializable {
     return getValue();
   }
 
-  public ImmutableList<String> getList() {
+  public List<String> getList() {
     requiredType(DataType.LIST);
     return getValue();
   }
@@ -110,17 +108,17 @@ public class DictValue implements Serializable {
     return new DictValue(DataType.STRING, value);
   }
 
-//  public static DictValue list(Sequence<String> values) {
-//    return new DictValue(DataType.LIST, values.asList());
-//  }
+  public static DictValue list(List<String> values) {
+    return new DictValue(DataType.LIST, values);
+  }
 //
 //  public static DictValue list(Collection<String> values) {
 //    return new DictValue(DataType.LIST, ImmutableList.from(requireNonNull(values).stream()));
 //  }
 //
-//  public static DictValue list(String... values) {
-//    return new DictValue(DataType.LIST, ImmutableList.from(Stream.of(values)));
-//  }
+  public static DictValue list(String... values) {
+    return new DictValue(DataType.LIST, Lists.newLinkedList(Arrays.asList(values)));
+  }
 //
 //  public static DictValue set(Sequence<String> values) {
 //    return new DictValue(DataType.SET, values.asSet());

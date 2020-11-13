@@ -26,7 +26,7 @@ public class ExistsCommand implements DBCommand {
 
   @Override
   public RedisMessage execute(RedisDb db, Request request) {
-    List<DictValue> result = DictUtils.getValues(db.getDict(),request.getParamsStrList());
+    List<DictValue> result = DictUtils.getValues(db,request.getParamsStrList());
     return new IntegerRedisMessage(result.size());
   }
 }

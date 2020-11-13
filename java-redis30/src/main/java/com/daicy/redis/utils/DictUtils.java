@@ -13,12 +13,14 @@ import io.netty.handler.codec.redis.FullBulkStringRedisMessage;
 import io.netty.handler.codec.redis.RedisMessage;
 import io.netty.handler.codec.redis.SimpleStringRedisMessage;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static io.netty.handler.codec.redis.FullBulkStringRedisMessage.NULL_INSTANCE;
 import static java.time.Instant.now;
 
 public class DictUtils {
@@ -30,16 +32,16 @@ public class DictUtils {
                     String string = value.getString();
                     return new SimpleStringRedisMessage(string);
 //      case HASH:
-//          ImmutableMap<SafeString, SafeString> map = value.getHash();
+//          ImmutableMap<String, String> map = value.getHash();
 //          return array(keyValueList(map).toList());
 //      case LIST:
-//          ImmutableList<SafeString> list = value.getList();
+//          ImmutableList<String> list = value.getList();
 //          return convertArray(list.toList());
 //      case SET:
-//          ImmutableSet<SafeString> set = value.getSet();
+//          ImmutableSet<String> set = value.getSet();
 //          return convertArray(set.toSet());
 //      case ZSET:
-//          NavigableSet<Entry<Double, SafeString>> zset = value.getSortedSet();
+//          NavigableSet<Entry<Double, String>> zset = value.getSortedSet();
 //          return convertArray(serialize(zset));
                 default:
                     break;
@@ -48,11 +50,25 @@ public class DictUtils {
         return FullBulkStringRedisMessage.NULL_INSTANCE;
     }
 
-    public static List<DictValue> getValues(Dict database, List<String> keys) {
-        if (CollectionUtils.isEmpty(keys) || null == database) {
+    public static DictValue getValue(RedisDb db, String key) {
+        if (StringUtils.isEmpty(key) || null == db.getDict()) {
+            return null;
+        }
+        DictKey dictKey = DictKey.safeKey(key);
+        if (DictUtils.isExpired(db, dictKey)) {
+            return null;
+        }
+        return db.getDict().get(dictKey);
+    }
+
+    public static List<DictValue> getValues(RedisDb db, List<String> keys) {
+        if (CollectionUtils.isEmpty(keys) || null == db.getDict()) {
             return Lists.newArrayList();
         }
-        return keys.stream().map(key -> database.get(new DictKey(key))).collect(Collectors.toList());
+        return keys.stream().map(key -> new DictKey(key))
+                .filter(dictKey -> !DictUtils.isExpired(db, dictKey))
+                .map(dictKey -> db.getDict().get(dictKey))
+                .collect(Collectors.toList());
     }
 
     public static Instant toInstantSs(long ttlSeconds) {
