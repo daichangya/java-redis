@@ -17,6 +17,11 @@ import com.daicy.redis.storage.RedisDb;
 import com.google.common.collect.ImmutableList;
 import io.netty.handler.codec.redis.RedisMessage;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.daicy.redis.storage.DictKey.safeKey;
+
 @ReadOnly
 @Command("lrange")
 @ParamLength(3)
@@ -26,8 +31,8 @@ public class ListRangeCommand implements DBCommand {
   @Override
   public RedisMessage execute(RedisDb db, Request request) {
     try {
-      DictValue value = db.getDict().getOrDefault(safeKey(request.getParam(0)), DatabaseValue.EMPTY_LIST);
-      ImmutableList<String> list = value.getList();
+      DictValue value = db.getDict().getOrDefault(safeKey(request.getParamStr(0)), DictValue.EMPTY_LIST);
+      List<String> list = value.getList();
 
       int from = Integer.parseInt(request.getParam(1).toString());
       if (from < 0) {
@@ -42,7 +47,7 @@ public class ListRangeCommand implements DBCommand {
       int max = Math.max(from, to);
 
       // TODO: use Array
-      ImmutableList<String> result = ImmutableList.from(list.stream().skip(min).limit((max - min) + 1));
+      List<String> result = list.stream().skip(min).limit((max - min) + 1).collect(Collectors.toList());
 
       return convert(result);
     } catch (NumberFormatException e) {

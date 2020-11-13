@@ -12,21 +12,21 @@ import java.util.function.BiFunction;
 
 public interface Dict {
 
-  int size();
+    int size();
 
-  boolean isEmpty();
+    boolean isEmpty();
 
-  boolean containsKey(DictKey key);
+    boolean containsKey(DictKey key);
 
-  DictValue get(DictKey key);
+    DictValue get(DictKey key);
 
-  DictValue put(DictKey key, DictValue value);
+    DictValue put(DictKey key, DictValue value);
 
-  DictValue remove(DictKey key);
+    DictValue remove(DictKey key);
 
-  void clear();
+    void clear();
 
-  ImmutableSet<DictKey> keySet();
+    ImmutableSet<DictKey> keySet();
 
 //  Sequence<DictValue> values();
 //
@@ -52,7 +52,7 @@ public interface Dict {
 //    return getOrDefault(safeKey(key), DictValue.EMPTY_HASH).getHash();
 //  }
 
-//  default void putAll(ImmutableMap<? extends DictKey, ? extends DictValue> map) {
+    //  default void putAll(ImmutableMap<? extends DictKey, ? extends DictValue> map) {
 //    map.forEach(this::put);
 //  }
 //
@@ -64,36 +64,38 @@ public interface Dict {
 //    return oldValue;
 //  }
 //
-  default DictValue merge(DictKey key, DictValue value,
-                              BiFunction<DictValue, DictValue, DictValue> remappingFunction) {
-    DictValue oldValue = get(key);
-    DictValue newValue = oldValue == null ? value : remappingFunction.apply(oldValue, value);
-    if(newValue == null) {
-      remove(key);
-    } else {
-      put(key, newValue);
+    default DictValue merge(DictKey key, DictValue value,
+                            BiFunction<DictValue, DictValue, DictValue> remappingFunction) {
+        DictValue oldValue = get(key);
+        DictValue newValue = oldValue == null ? value : remappingFunction.apply(oldValue, value);
+        if (newValue == null) {
+            remove(key);
+        } else {
+            put(key, newValue);
+        }
+        return newValue;
     }
-    return newValue;
-  }
-//
-//  default DictValue getOrDefault(DictKey key, DictValue defaultValue) {
-//    DictValue value = get(key);
-//    return (value != null || containsKey(key)) ? value : defaultValue;
-//  }
-//
+
+    //
+    default DictValue getOrDefault(DictKey key, DictValue defaultValue) {
+        DictValue value = get(key);
+        return (value != null || containsKey(key)) ? value : defaultValue;
+    }
+
+    //
 //  default boolean isType(DictKey key, DataType type) {
 //    DictValue value = get(key);
 //    return value != null ? value.getType() == type : true;
 //  }
 //
-  default boolean rename(DictKey from, DictKey to) {
-    DictValue value = remove(from);
-    if (value != null) {
-      put(to, value);
-      return true;
+    default boolean rename(DictKey from, DictKey to) {
+        DictValue value = remove(from);
+        if (value != null) {
+            put(to, value);
+            return true;
+        }
+        return false;
     }
-    return false;
-  }
 //
 //  default void overrideAll(ImmutableMap<DictKey, DictValue> value) {
 //    clear();
