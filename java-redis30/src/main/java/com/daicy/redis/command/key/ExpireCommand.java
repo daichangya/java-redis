@@ -12,6 +12,7 @@ import com.daicy.redis.command.DBCommand;
 import com.daicy.redis.storage.DictKey;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
+import com.daicy.redis.utils.DictUtils;
 import io.netty.handler.codec.redis.ErrorRedisMessage;
 import io.netty.handler.codec.redis.RedisMessage;
 
@@ -30,7 +31,8 @@ public class ExpireCommand implements DBCommand {
             if (null == dictValue) {
                 return ZERO;
             }
-            db.getExpires().put(dictKey, DictValue.toLong(parsetTtl(request.getParamStr(1))));
+            db.getExpires().put(dictKey, DictValue.toLong(
+                    DictUtils.toInstantSs(parsetTtl(request.getParamStr(1))).toEpochMilli()));
             return ONE;
         } catch (NumberFormatException e) {
             return new ErrorRedisMessage("ERR value is not an integer or out of range");

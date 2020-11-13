@@ -188,14 +188,6 @@ public class DictValue implements Serializable {
     return Duration.between(now, Instant.ofEpochMilli(getLong())).toMillis();
   }
 
-  private Instant toInstant(long ttlMillis) {
-    return now().plusMillis(ttlMillis);
-  }
-
-  private long toMillis(long ttlSeconds) {
-    return TimeUnit.SECONDS.toMillis(ttlSeconds);
-  }
-
   public Instant getExpiredAt() {
     return Instant.ofEpochMilli(getLong());
   }

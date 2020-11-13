@@ -62,7 +62,7 @@ public class DefaultRequest implements Request {
 
     @Override
     public String getParamStr(int i) {
-        return i < paramsStrList.size() ? null : paramsStrList.get(i);
+        return i < paramsStrList.size() ? paramsStrList.get(i) : null;
     }
 
     @Override

@@ -7,14 +7,19 @@ package com.daicy.redis.utils;
 import com.daicy.redis.storage.Dict;
 import com.daicy.redis.storage.DictKey;
 import com.daicy.redis.storage.DictValue;
+import com.daicy.redis.storage.RedisDb;
 import com.google.common.collect.Lists;
 import io.netty.handler.codec.redis.FullBulkStringRedisMessage;
 import io.netty.handler.codec.redis.RedisMessage;
 import io.netty.handler.codec.redis.SimpleStringRedisMessage;
 import org.apache.commons.collections4.CollectionUtils;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static java.time.Instant.now;
 
 public class DictUtils {
 
@@ -48,5 +53,32 @@ public class DictUtils {
             return Lists.newArrayList();
         }
         return keys.stream().map(key -> database.get(new DictKey(key))).collect(Collectors.toList());
+    }
+
+    public static Instant toInstantSs(long ttlSeconds) {
+        return now().plusMillis(toMillis(ttlSeconds));
+    }
+
+
+    public static Instant toInstantMs(long ttlMillis) {
+        return now().plusMillis(ttlMillis);
+    }
+
+    public static long toMillis(long ttlSeconds) {
+        return TimeUnit.SECONDS.toMillis(ttlSeconds);
+    }
+
+    public static boolean isExpired(RedisDb db, DictKey dictKey) {
+        Dict dbExpires = db.getExpires();
+        DictValue expireValue = dbExpires.get(dictKey);
+        if (null == expireValue) {
+            return false;
+        }
+        boolean isExpired = expireValue.isExpired(Instant.now());
+        if (isExpired) {
+            dbExpires.remove(dictKey);
+            db.getDict().remove(dictKey);
+        }
+        return isExpired;
     }
 }

@@ -15,6 +15,7 @@ import com.daicy.redis.storage.Dict;
 import com.daicy.redis.storage.DictKey;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
+import com.daicy.redis.utils.DictUtils;
 import com.google.common.collect.ImmutableSet;
 import io.netty.handler.codec.redis.ArrayRedisMessage;
 import io.netty.handler.codec.redis.RedisMessage;
@@ -34,7 +35,7 @@ public class KeysCommand implements DBCommand {
         GlobPattern pattern = createPattern(request.getParamStr(0));
         List<RedisMessage> keys = db.getDict().keySet().stream()
                 .filter(dictKey -> pattern.match(dictKey.getValue()))
-                .filter(dictKey -> filterExpired(db.getExpires(), dictKey))
+                .filter(dictKey -> filterExpired(db, dictKey))
                 .map(dictKey -> dictKey.getValue())
                 .map(dictKey -> new SimpleStringRedisMessage(dictKey))
                 .collect(Collectors.toList());
@@ -45,9 +46,7 @@ public class KeysCommand implements DBCommand {
         return new GlobPattern(param);
     }
 
-    private boolean filterExpired(Dict expires, DictKey dictKey) {
-        boolean isExpired = expires.get(dictKey).isExpired(Instant.now());
-        expires.remove(dictKey);
-        return !isExpired;
+    private boolean filterExpired(RedisDb db, DictKey dictKey) {
+        return !DictUtils.isExpired(db, dictKey);
     }
 }

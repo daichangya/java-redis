@@ -1,3 +1,15 @@
 com.daicy.redis.command.string.GetCommand
 com.daicy.redis.command.string.SetCommand
 com.daicy.redis.command.db.SelectCommand
+com.daicy.redis.command.db.DbSizeCommand
+com.daicy.redis.command.db.FlushDBCommand
+com.daicy.redis.command.db.InfoCommand
+com.daicy.redis.command.key.DeleteCommand
+com.daicy.redis.command.key.ExpireCommand
+com.daicy.redis.command.key.PersistCommand
+com.daicy.redis.command.key.TimeToLiveSecondsCommand
+com.daicy.redis.command.key.ExistsCommand
+com.daicy.redis.command.key.KeysCommand
+com.daicy.redis.command.key.RenameCommand
+com.daicy.redis.command.key.TimeToLiveMillisCommand
+com.daicy.redis.command.key.TypeCommand

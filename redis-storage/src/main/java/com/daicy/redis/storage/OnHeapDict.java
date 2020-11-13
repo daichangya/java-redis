@@ -39,14 +39,7 @@ public class OnHeapDict implements Dict {
 
   @Override
   public DictValue get(DictKey key) {
-    DictValue value = cache.get(key);
-    if (value != null) {
-      if (!value.isExpired(Instant.now())) {
-        return value;
-      }
-      cache.remove(key);
-    }
-    return null;
+    return cache.get(key);
   }
 
   @Override
