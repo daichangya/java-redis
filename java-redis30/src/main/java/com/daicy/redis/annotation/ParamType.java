@@ -5,7 +5,7 @@
 package com.daicy.redis.annotation;
 
 
-import com.daicy.redis.database.DataType;
+import com.daicy.redis.storage.DataType;
 
 import java.lang.annotation.*;
 

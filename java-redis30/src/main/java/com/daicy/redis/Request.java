@@ -8,6 +8,8 @@ package com.daicy.redis;
 import io.netty.handler.codec.redis.ArrayRedisMessage;
 import io.netty.handler.codec.redis.RedisMessage;
 
+import java.util.List;
+
 
 /**
  * @author daichangya
@@ -20,6 +22,8 @@ public interface Request {
     ArrayRedisMessage getParams();
 
     RedisMessage getParam(int i);
+
+    List<String> getParamsStrList();
 
     String getParamStr(int i);
 

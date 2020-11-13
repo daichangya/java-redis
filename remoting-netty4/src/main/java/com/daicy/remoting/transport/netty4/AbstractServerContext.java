@@ -15,6 +15,18 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class AbstractServerContext implements ServerContext<ClientSession> {
     private final ConcurrentHashMap<String, ClientSession> clients = new ConcurrentHashMap<>();
 
+    private Server server;
+
+    @Override
+    public void setServer(Server server) {
+        this.server = server;
+    }
+
+    @Override
+    public Server getServer() {
+        return server;
+    }
+
     @Override
     public int getClientSize() {
         return clients.size();

@@ -12,6 +12,7 @@ public class RedisServer {
 
     public static void main(String[] args) throws Exception {
         Server redisServer = ServerBuilder.forPort(port).channelInitializer(new RedisServerInitializer()).build();
+        RedisServerContext.getInstance().setServer(redisServer);
         redisServer.start()
                 .thenAccept(ws -> {
                     System.out.println(

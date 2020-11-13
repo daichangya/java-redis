@@ -17,11 +17,11 @@ public class RedisClientSession extends ClientSession {
         super(id,channel);
     }
 
-    public int getDatabaseNum() {
+    public int getDictNum() {
         return databaseNum;
     }
 
-    public void setDatabaseNum(int databaseNum) {
+    public void setDictNum(int databaseNum) {
         this.databaseNum = databaseNum;
     }
 }

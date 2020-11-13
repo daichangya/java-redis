@@ -8,8 +8,9 @@ package com.daicy.redis.command;
 import com.daicy.redis.RedisServerContext;
 import com.daicy.redis.Request;
 import com.daicy.redis.annotation.*;
-import com.daicy.redis.database.DataType;
-import com.daicy.redis.database.Database;
+import com.daicy.redis.storage.DataType;
+import com.daicy.redis.storage.Dict;
+import com.daicy.redis.storage.RedisDb;
 import io.netty.handler.codec.redis.ErrorRedisMessage;
 import io.netty.handler.codec.redis.RedisMessage;
 
@@ -55,8 +56,8 @@ public class DBCommandWrapper implements RedisCommand {
     @Override
     public RedisMessage execute(Request request) {
         // FIXME: ugly piece of code, please refactor
-        Database db = RedisServerContext.getInstance().getDatabase(
-                request.getClientSession().getDatabaseNum());
+        RedisDb db = RedisServerContext.getInstance().getRedisDb(
+                request.getClientSession().getDictNum());
         if (request.getLength() < params) {
             return new ErrorRedisMessage("ERR wrong number of arguments for '" + request.getCommand() + "' command");
         }
@@ -72,7 +73,7 @@ public class DBCommandWrapper implements RedisCommand {
         return ((RedisCommand) command).execute(request);
     }
 
-    private RedisMessage executeDBCommand(Database db, Request request) {
+    private RedisMessage executeDBCommand(RedisDb db, Request request) {
         return ((DBCommand) command).execute(db, request);
     }
 

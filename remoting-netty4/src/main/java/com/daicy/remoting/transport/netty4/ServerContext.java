@@ -18,4 +18,8 @@ public interface ServerContext<T> {
     T addClient(T client);
 
     T getClient(Channel channel);
+
+    void setServer(Server server);
+
+    Server getServer();
 }

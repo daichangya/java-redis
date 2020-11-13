@@ -5,15 +5,15 @@
 package com.daicy.redis;
 
 import com.daicy.redis.utils.ByteBufUtils;
-import com.daicy.remoting.transport.netty4.ClientSession;
+import com.daicy.redis.utils.RedisMessageUtils;
 import com.google.common.base.Preconditions;
 import io.netty.handler.codec.redis.ArrayRedisMessage;
 import io.netty.handler.codec.redis.BulkStringRedisContent;
 import io.netty.handler.codec.redis.FullBulkStringRedisMessage;
 import io.netty.handler.codec.redis.RedisMessage;
-import io.netty.util.CharsetUtil;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class DefaultRequest implements Request {
@@ -24,6 +24,7 @@ public class DefaultRequest implements Request {
 
     private final RedisClientSession clientSession;
 
+    private final List<String> paramsStrList;
 
     public DefaultRequest(ArrayRedisMessage arrayRedisMessage, RedisClientSession clientSession) {
         List<RedisMessage> messageList = arrayRedisMessage.children();
@@ -32,6 +33,8 @@ public class DefaultRequest implements Request {
         byte[] name = ByteBufUtils.getBytes(fullBulkStringRedisMessage.content());
         this.command = Preconditions.checkNotNull(new String(name).toLowerCase());
         this.params = Preconditions.checkNotNull(new ArrayRedisMessage(messageList.subList(1, messageList.size())));
+        this.paramsStrList = params.children().stream().map(param -> RedisMessageUtils.toString(param))
+                .collect(Collectors.toList());
         this.clientSession = Preconditions.checkNotNull(clientSession);
     }
 
@@ -59,17 +62,13 @@ public class DefaultRequest implements Request {
 
     @Override
     public String getParamStr(int i) {
-        RedisMessage redisMessage = getParam(i);
-        if (null == redisMessage) {
-            return null;
-        }
-        if (redisMessage instanceof BulkStringRedisContent) {
-            return ((BulkStringRedisContent) redisMessage).content().toString(CharsetUtil.UTF_8);
-        } else {
-            return redisMessage.toString();
-        }
+        return i < paramsStrList.size() ? null : paramsStrList.get(i);
     }
 
+    @Override
+    public List<String> getParamsStrList() {
+        return paramsStrList;
+    }
 
     @Override
     public int getLength() {

@@ -10,9 +10,10 @@ import com.daicy.redis.Request;
 import com.daicy.redis.annotation.Command;
 import com.daicy.redis.annotation.ParamLength;
 import com.daicy.redis.command.DBCommand;
-import com.daicy.redis.database.Database;
-import com.daicy.redis.database.DatabaseKey;
-import com.daicy.redis.database.DatabaseValue;
+import com.daicy.redis.storage.Dict;
+import com.daicy.redis.storage.DictKey;
+import com.daicy.redis.storage.DictValue;
+import com.daicy.redis.storage.RedisDb;
 import io.netty.handler.codec.redis.ErrorRedisMessage;
 import io.netty.handler.codec.redis.FullBulkStringRedisMessage;
 import io.netty.handler.codec.redis.RedisMessage;
@@ -30,14 +31,14 @@ import static com.daicy.redis.RedisConstants.OK;
 public class SetCommand implements DBCommand {
 
     @Override
-    public RedisMessage execute(Database db, Request request) {
-        return Try.of(() -> onSuccess(db, request)).recover(this::onFailure)
+    public RedisMessage execute(RedisDb db, Request request) {
+        return Try.of(() -> onSuccess(db.getDict(), request)).recover(this::onFailure)
                 .get();
     }
 
-    private RedisMessage onSuccess(Database db, Request request) {
-        DatabaseKey key = DatabaseKey.safeKey(request.getParamStr(0));
-        DatabaseValue value = DatabaseValue.string(request.getParamStr(1));
+    private RedisMessage onSuccess(Dict db, Request request) {
+        DictKey key = DictKey.safeKey(request.getParamStr(0));
+        DictValue value = DictValue.string(request.getParamStr(1));
         return value.equals(saveValue(db, key, value)) ? OK : FullBulkStringRedisMessage.NULL_INSTANCE;
     }
 
@@ -45,13 +46,13 @@ public class SetCommand implements DBCommand {
         return new ErrorRedisMessage("error: " + e.getMessage());
     }
 
-    private DatabaseValue saveValue(Database db, DatabaseKey key, DatabaseValue value) {
-        DatabaseValue savedValue = null;
+    private DictValue saveValue(Dict db, DictKey key, DictValue value) {
+        DictValue savedValue = null;
         savedValue = putValue(db, key, value);
         return savedValue;
     }
 
-    private DatabaseValue putValue(Database db, DatabaseKey key, DatabaseValue value) {
+    private DictValue putValue(Dict db, DictKey key, DictValue value) {
         db.put(key, value);
         return value;
     }

@@ -3,8 +3,9 @@ package com.daicy.redis;
 import com.daicy.redis.command.CommandSuite;
 import com.daicy.redis.command.DBCommandSuite;
 import com.daicy.redis.command.RedisCommand;
-import com.daicy.redis.database.Database;
-import com.daicy.redis.database.DatabaseFactory;
+import com.daicy.redis.storage.Dict;
+import com.daicy.redis.storage.DictFactory;
+import com.daicy.redis.storage.RedisDb;
 import com.daicy.remoting.transport.netty4.AbstractServerContext;
 import io.netty.channel.Channel;
 
@@ -21,7 +22,7 @@ public class RedisServerContext extends AbstractServerContext {
 
     private final CommandSuite commands = new DBCommandSuite();
 
-    private final List<Database> databases = new ArrayList<>();
+    private final List<RedisDb> databases = new ArrayList<>();
 
     private static RedisServerContext ourInstance = new RedisServerContext();
 
@@ -30,9 +31,13 @@ public class RedisServerContext extends AbstractServerContext {
     }
 
     private RedisServerContext() {
-        DatabaseFactory factory = ServiceLoaderUtils.loadService(DatabaseFactory.class);
+        DictFactory factory = ServiceLoaderUtils.loadService(DictFactory.class);
         for (int i = 0; i < 16; i++) {
-            this.databases.add(factory.create("db-" + i));
+            RedisDb redisDb = new RedisDb();
+            redisDb.setDict(factory.create());
+            redisDb.setExpires(factory.create());
+            redisDb.setId(i);
+            this.databases.add(redisDb);
         }
     }
 
@@ -40,12 +45,12 @@ public class RedisServerContext extends AbstractServerContext {
         return commands.getCommand(name);
     }
 
-    public Database getDatabase(int id) {
+    public RedisDb getRedisDb(int id) {
         return databases.get(id);
     }
 
     @Override
     protected RedisClientSession newSession(Channel channel) {
-        return new RedisClientSession(sourceKey(channel),channel);
+        return new RedisClientSession(sourceKey(channel), channel);
     }
 }

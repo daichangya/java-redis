@@ -13,10 +13,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.daicy</groupId>
             <artifactId>redis-protocol</artifactId>
             <version>1.0-SNAPSHOT</version>
@@ -27,13 +23,17 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>RELEASE</version>
+            <groupId>com.daicy</groupId>
+            <artifactId>redis-storage</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
             <version>RELEASE</version>
         </dependency>
     </dependencies>
