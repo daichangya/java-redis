@@ -1,6 +1,14 @@
 package com.daicy.redis.storage;
 
 
+import io.netty.handler.codec.redis.RedisMessage;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.time.Instant;
+
+import static com.daicy.redis.storage.RedisConstants.TYPE_ERROR;
+import static io.netty.handler.codec.redis.FullBulkStringRedisMessage.NULL_INSTANCE;
+
 /**
  * @author: create by daichangya
  * @version: v1.0
@@ -8,7 +16,7 @@ package com.daicy.redis.storage;
  * @date:11/13/20
  */
 public class RedisDb {
-//    // 数据库键空间，保存着数据库中的所有键值对
+    //    // 数据库键空间，保存着数据库中的所有键值对
 //    dict *dict;                 /* The keyspace for this DB */
 //
 //    // 键的过期时间，字典的键为键，字典的值为过期事件 UNIX 时间戳
@@ -98,5 +106,44 @@ public class RedisDb {
 
     public void setAvg_ttl(long avg_ttl) {
         this.avg_ttl = avg_ttl;
+    }
+
+    public Pair<DictValue, RedisMessage> lookupKeyOrReply(String key, DataType dataType,RedisMessage redisMessage) {
+        DictKey dictKey = DictKey.safeKey(key);
+        DictValue dictValue = lookupKeyOrExpire(dictKey);
+        if (null == dictValue) {
+            return Pair.of(dictValue, redisMessage);
+        }
+        if (!dataType.equals(dictValue.getType())) {
+            return Pair.of(dictValue, TYPE_ERROR);
+        }
+        return Pair.of(dictValue, null);
+    }
+
+    public DictValue lookupKeyOrExpire(DictKey dictKey) {
+        boolean isExpired = expireIfNeeded(dictKey);
+        if (isExpired) {
+            return null;
+        }
+        return lookupKey(dictKey);
+    }
+
+    public DictValue lookupKey(DictKey dictKey) {
+        return this.getDict().get(dictKey);
+    }
+
+    public boolean expireIfNeeded(DictKey dictKey) {
+        Dict dbExpires = this.getExpires();
+        DictValue expireValue = dbExpires.get(dictKey);
+        if (null == expireValue) {
+            return false;
+        }
+        boolean isExpired = expireValue.isExpired(Instant.now());
+        if (isExpired) {
+            dbExpires.remove(dictKey);
+            this.getDict().remove(dictKey);
+        }
+        return isExpired;
+
     }
 }

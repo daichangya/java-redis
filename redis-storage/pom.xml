@@ -12,9 +12,8 @@
     <artifactId>redis-storage</artifactId>
     <dependencies>
         <dependency>
-            <groupId>com.daicy</groupId>
-            <artifactId>java-redis0.7</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
         </dependency>
     </dependencies>
 

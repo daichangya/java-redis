@@ -18,7 +18,7 @@ import io.netty.handler.codec.redis.ErrorRedisMessage;
 import io.netty.handler.codec.redis.FullBulkStringRedisMessage;
 import io.netty.handler.codec.redis.RedisMessage;
 
-import static com.daicy.redis.RedisConstants.OK;
+import static com.daicy.redis.storage.RedisConstants.OK;
 
 
 /**

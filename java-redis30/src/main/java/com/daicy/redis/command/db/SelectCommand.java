@@ -10,7 +10,7 @@ import com.daicy.redis.storage.RedisDb;
 import io.netty.handler.codec.redis.ErrorRedisMessage;
 import io.netty.handler.codec.redis.RedisMessage;
 
-import static com.daicy.redis.RedisConstants.OK;
+import static com.daicy.redis.storage.RedisConstants.OK;
 import static java.lang.Integer.parseInt;
 
 @ReadOnly

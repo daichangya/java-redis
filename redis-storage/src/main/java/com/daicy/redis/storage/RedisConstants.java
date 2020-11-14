@@ -1,4 +1,4 @@
-package com.daicy.redis;
+package com.daicy.redis.storage;
 
 import io.netty.handler.codec.redis.ErrorRedisMessage;
 import io.netty.handler.codec.redis.FixedRedisMessagePool;
@@ -23,6 +23,12 @@ public class RedisConstants {
     public static final SimpleStringRedisMessage QUIT =
             FixedRedisMessagePool.INSTANCE.getSimpleString("QUIT");
 
+    public static final ErrorRedisMessage NO_KEY =
+            FixedRedisMessagePool.INSTANCE.getError("ERR no such key");
+
+
+    public static final ErrorRedisMessage OUT_RANGE =
+            FixedRedisMessagePool.INSTANCE.getError("ERR index out of range");
 
     public static final ErrorRedisMessage TYPE_ERROR =
             FixedRedisMessagePool.INSTANCE.getError("WRONGTYPE Operation against a key holding the wrong kind of value");

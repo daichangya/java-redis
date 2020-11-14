@@ -14,7 +14,8 @@ import com.daicy.redis.storage.RedisDb;
 import io.netty.handler.codec.redis.RedisMessage;
 import io.netty.handler.codec.redis.SimpleStringRedisMessage;
 
-import static com.daicy.redis.RedisConstants.OK;
+import static com.daicy.redis.storage.RedisConstants.NO_KEY;
+import static com.daicy.redis.storage.RedisConstants.OK;
 import static com.daicy.redis.storage.DictKey.safeKey;
 
 @Command("rename")
@@ -29,7 +30,7 @@ public class RenameCommand implements DBCommand {
             db.getExpires().rename(from, to);
             return OK;
         } else {
-            return new SimpleStringRedisMessage("ERR no such key");
+            return NO_KEY;
         }
     }
 }

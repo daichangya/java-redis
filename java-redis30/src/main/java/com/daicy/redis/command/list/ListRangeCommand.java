@@ -14,7 +14,8 @@ import com.daicy.redis.command.DBCommand;
 import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
-import com.google.common.collect.ImmutableList;
+import com.daicy.redis.utils.DictUtils;
+import io.netty.handler.codec.redis.ErrorRedisMessage;
 import io.netty.handler.codec.redis.RedisMessage;
 
 import java.util.List;
@@ -28,30 +29,30 @@ import static com.daicy.redis.storage.DictKey.safeKey;
 @ParamType(DataType.LIST)
 public class ListRangeCommand implements DBCommand {
 
-  @Override
-  public RedisMessage execute(RedisDb db, Request request) {
-    try {
-      DictValue value = db.getDict().getOrDefault(safeKey(request.getParamStr(0)), DictValue.EMPTY_LIST);
-      List<String> list = value.getList();
+    @Override
+    public RedisMessage execute(RedisDb db, Request request) {
+        try {
+            DictValue value = db.getDict().getOrDefault(safeKey(request.getParamStr(0)), DictValue.EMPTY_LIST);
+            List<String> list = value.getList();
 
-      int from = Integer.parseInt(request.getParam(1).toString());
-      if (from < 0) {
-        from = list.size() + from;
-      }
-      int to = Integer.parseInt(request.getParam(2).toString());
-      if (to < 0) {
-        to = list.size() + to;
-      }
+            int from = Integer.parseInt(request.getParam(1).toString());
+            if (from < 0) {
+                from = list.size() + from;
+            }
+            int to = Integer.parseInt(request.getParam(2).toString());
+            if (to < 0) {
+                to = list.size() + to;
+            }
 
-      int min = Math.min(from, to);
-      int max = Math.max(from, to);
+            int min = Math.min(from, to);
+            int max = Math.max(from, to);
 
-      // TODO: use Array
-      List<String> result = list.stream().skip(min).limit((max - min) + 1).collect(Collectors.toList());
+            // TODO: use Array
+            List<String> result = list.stream().skip(min).limit((max - min) + 1).collect(Collectors.toList());
 
-      return convert(result);
-    } catch (NumberFormatException e) {
-      return error("ERR value is not an integer or out of range");
+            return DictUtils.toRedisMessage(result);
+        } catch (NumberFormatException e) {
+            return new ErrorRedisMessage("ERR value is not an integer or out of range");
+        }
     }
-  }
 }

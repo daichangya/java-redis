@@ -5,7 +5,7 @@
 package com.daicy.redis.command;
 
 
-import com.daicy.redis.RedisConstants;
+import com.daicy.redis.storage.RedisConstants;
 import com.daicy.redis.Request;
 import com.daicy.redis.annotation.Command;
 import io.netty.handler.codec.redis.RedisMessage;

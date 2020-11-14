@@ -10,8 +10,8 @@ import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
 import io.netty.handler.codec.redis.RedisMessage;
 
-import static com.daicy.redis.RedisConstants.ONE;
-import static com.daicy.redis.RedisConstants.ZERO;
+import static com.daicy.redis.storage.RedisConstants.ONE;
+import static com.daicy.redis.storage.RedisConstants.ZERO;
 import static com.daicy.redis.storage.DictKey.safeKey;
 
 @Command("persist")

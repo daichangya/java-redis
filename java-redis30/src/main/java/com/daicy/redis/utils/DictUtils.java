@@ -9,18 +9,17 @@ import com.daicy.redis.storage.DictKey;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
 import com.google.common.collect.Lists;
+import io.netty.handler.codec.redis.ArrayRedisMessage;
 import io.netty.handler.codec.redis.FullBulkStringRedisMessage;
 import io.netty.handler.codec.redis.RedisMessage;
 import io.netty.handler.codec.redis.SimpleStringRedisMessage;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static io.netty.handler.codec.redis.FullBulkStringRedisMessage.NULL_INSTANCE;
 import static java.time.Instant.now;
 
 public class DictUtils {
@@ -34,9 +33,9 @@ public class DictUtils {
 //      case HASH:
 //          ImmutableMap<String, String> map = value.getHash();
 //          return array(keyValueList(map).toList());
-//      case LIST:
-//          ImmutableList<String> list = value.getList();
-//          return convertArray(list.toList());
+                case LIST:
+                    List<String> list = value.getList();
+                    return toRedisMessage(list);
 //      case SET:
 //          ImmutableSet<String> set = value.getSet();
 //          return convertArray(set.toSet());
@@ -50,15 +49,13 @@ public class DictUtils {
         return FullBulkStringRedisMessage.NULL_INSTANCE;
     }
 
-    public static DictValue getValue(RedisDb db, String key) {
-        if (StringUtils.isEmpty(key) || null == db.getDict()) {
-            return null;
+    public static ArrayRedisMessage toRedisMessage(List<String> values) {
+        if (CollectionUtils.isEmpty(values)) {
+            return ArrayRedisMessage.EMPTY_INSTANCE;
         }
-        DictKey dictKey = DictKey.safeKey(key);
-        if (DictUtils.isExpired(db, dictKey)) {
-            return null;
-        }
-        return db.getDict().get(dictKey);
+        List<RedisMessage> redisMessageList =
+                values.stream().map(value -> new SimpleStringRedisMessage(value)).collect(Collectors.toList());
+        return new ArrayRedisMessage(redisMessageList);
     }
 
     public static List<DictValue> getValues(RedisDb db, List<String> keys) {
@@ -97,4 +94,6 @@ public class DictUtils {
         }
         return isExpired;
     }
+
+
 }

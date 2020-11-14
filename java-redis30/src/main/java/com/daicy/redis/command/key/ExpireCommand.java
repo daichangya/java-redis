@@ -16,8 +16,8 @@ import com.daicy.redis.utils.DictUtils;
 import io.netty.handler.codec.redis.ErrorRedisMessage;
 import io.netty.handler.codec.redis.RedisMessage;
 
-import static com.daicy.redis.RedisConstants.ONE;
-import static com.daicy.redis.RedisConstants.ZERO;
+import static com.daicy.redis.storage.RedisConstants.ONE;
+import static com.daicy.redis.storage.RedisConstants.ZERO;
 
 @Command("expire")
 @ParamLength(2)
