@@ -3,6 +3,7 @@ package com.daicy.redis.utils;
 import com.daicy.redis.codec.StringCodec;
 import io.netty.handler.codec.redis.AbstractStringRedisMessage;
 import io.netty.handler.codec.redis.BulkStringRedisContent;
+import com.daicy.redis.protocal.Reply;
 import io.netty.handler.codec.redis.RedisMessage;
 
 /**

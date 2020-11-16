@@ -5,12 +5,11 @@
 package com.daicy.redis.command;
 
 import com.daicy.redis.Request;
-import com.daicy.redis.storage.Dict;
+import com.daicy.redis.protocal.Reply;
 import com.daicy.redis.storage.RedisDb;
-import io.netty.handler.codec.redis.RedisMessage;
 
 
 @FunctionalInterface
 public interface DBCommand {
-  RedisMessage execute(RedisDb db, Request request);
+  Reply execute(RedisDb db, Request request);
 }

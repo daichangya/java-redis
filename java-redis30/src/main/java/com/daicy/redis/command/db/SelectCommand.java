@@ -6,11 +6,11 @@ import com.daicy.redis.annotation.Command;
 import com.daicy.redis.annotation.ParamLength;
 import com.daicy.redis.annotation.ReadOnly;
 import com.daicy.redis.command.DBCommand;
+import com.daicy.redis.protocal.ErrorReply;
+import com.daicy.redis.protocal.Reply;
 import com.daicy.redis.storage.RedisDb;
-import io.netty.handler.codec.redis.ErrorRedisMessage;
-import io.netty.handler.codec.redis.RedisMessage;
 
-import static com.daicy.redis.storage.RedisConstants.OK;
+import static com.daicy.redis.protocal.ReplyConstants.OK;
 import static java.lang.Integer.parseInt;
 
 @ReadOnly
@@ -19,12 +19,12 @@ import static java.lang.Integer.parseInt;
 public class SelectCommand implements DBCommand {
 
     @Override
-    public RedisMessage execute(RedisDb db, Request request) {
+    public Reply execute(RedisDb db, Request request) {
         try {
             request.getClientSession().setDictNum(parseCurrentDB(request));
             return OK;
         } catch (NumberFormatException e) {
-            return new ErrorRedisMessage("ERR invalid DB index");
+            return new ErrorReply("ERR invalid DB index");
         }
     }
 

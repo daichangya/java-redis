@@ -10,17 +10,17 @@ import com.daicy.redis.annotation.Command;
 import com.daicy.redis.annotation.ParamLength;
 import com.daicy.redis.annotation.ParamType;
 import com.daicy.redis.command.DBCommand;
+import com.daicy.redis.protocal.BulkReply;
+import com.daicy.redis.protocal.Reply;
 import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
-import io.netty.handler.codec.redis.RedisMessage;
-import io.netty.handler.codec.redis.SimpleStringRedisMessage;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.LinkedList;
 
-import static io.netty.handler.codec.redis.FullBulkStringRedisMessage.NULL_INSTANCE;
+import static com.daicy.redis.protocal.ReplyConstants.NULL;
 
 @Command("rpop")
 @ParamLength(1)
@@ -28,16 +28,16 @@ import static io.netty.handler.codec.redis.FullBulkStringRedisMessage.NULL_INSTA
 public class RightPopCommand implements DBCommand {
 
     @Override
-    public RedisMessage execute(RedisDb db, Request request) {
-        Pair<DictValue, RedisMessage> value =
-                db.lookupKeyOrReply(request.getParamStr(0), DataType.LIST, NULL_INSTANCE);
+    public Reply execute(RedisDb db, Request request) {
+        Pair<DictValue, Reply> value =
+                db.lookupKeyOrReply(request.getParamStr(0), DataType.LIST, NULL);
         if (null != value.getRight()) {
             return value.getRight();
         }
         LinkedList<String> dictValueList = (LinkedList<String>) value.getLeft().getList();
         if (CollectionUtils.isEmpty(dictValueList)) {
-            return NULL_INSTANCE;
+            return NULL;
         }
-        return new SimpleStringRedisMessage(dictValueList.removeLast());
+        return new BulkReply(dictValueList.removeLast());
     }
 }

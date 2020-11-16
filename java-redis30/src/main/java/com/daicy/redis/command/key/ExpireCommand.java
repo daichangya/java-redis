@@ -9,22 +9,22 @@ import com.daicy.redis.Request;
 import com.daicy.redis.annotation.Command;
 import com.daicy.redis.annotation.ParamLength;
 import com.daicy.redis.command.DBCommand;
+import com.daicy.redis.protocal.ErrorReply;
 import com.daicy.redis.storage.DictKey;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
 import com.daicy.redis.utils.DictUtils;
-import io.netty.handler.codec.redis.ErrorRedisMessage;
-import io.netty.handler.codec.redis.RedisMessage;
+import com.daicy.redis.protocal.Reply;
 
-import static com.daicy.redis.storage.RedisConstants.ONE;
-import static com.daicy.redis.storage.RedisConstants.ZERO;
+import static com.daicy.redis.protocal.ReplyConstants.ONE;
+import static com.daicy.redis.protocal.ReplyConstants.ZERO;
 
 @Command("expire")
 @ParamLength(2)
 public class ExpireCommand implements DBCommand {
 
     @Override
-    public RedisMessage execute(RedisDb db, Request request) {
+    public Reply execute(RedisDb db, Request request) {
         try {
             DictKey dictKey = new DictKey(request.getParamStr(0));
             DictValue dictValue = db.getDict().get(dictKey);
@@ -35,7 +35,7 @@ public class ExpireCommand implements DBCommand {
                     parsetTtl(request.getParamStr(1))));
             return ONE;
         } catch (NumberFormatException e) {
-            return new ErrorRedisMessage("ERR value is not an integer or out of range");
+            return new ErrorReply("ERR value is not an integer or out of range");
         }
     }
 

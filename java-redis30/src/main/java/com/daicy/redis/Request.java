@@ -6,6 +6,7 @@ package com.daicy.redis;
 
 
 import io.netty.handler.codec.redis.ArrayRedisMessage;
+import com.daicy.redis.protocal.Reply;
 import io.netty.handler.codec.redis.RedisMessage;
 
 import java.util.List;

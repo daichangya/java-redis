@@ -1,13 +1,12 @@
 package com.daicy.redis.storage;
 
 
-import io.netty.handler.codec.redis.RedisMessage;
+import com.daicy.redis.protocal.Reply;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.Instant;
 
-import static com.daicy.redis.storage.RedisConstants.TYPE_ERROR;
-import static io.netty.handler.codec.redis.FullBulkStringRedisMessage.NULL_INSTANCE;
+import static com.daicy.redis.protocal.ReplyConstants.TYPE_ERROR;
 
 /**
  * @author: create by daichangya
@@ -108,11 +107,11 @@ public class RedisDb {
         this.avg_ttl = avg_ttl;
     }
 
-    public Pair<DictValue, RedisMessage> lookupKeyOrReply(String key, DataType dataType,RedisMessage redisMessage) {
+    public Pair<DictValue, Reply> lookupKeyOrReply(String key, DataType dataType, Reply reply) {
         DictKey dictKey = DictKey.safeKey(key);
         DictValue dictValue = lookupKeyOrExpire(dictKey);
         if (null == dictValue) {
-            return Pair.of(dictValue, redisMessage);
+            return Pair.of(dictValue, reply);
         }
         if (!dataType.equals(dictValue.getType())) {
             return Pair.of(dictValue, TYPE_ERROR);

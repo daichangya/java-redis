@@ -40,6 +40,7 @@ public class RedisServerInitializer extends ChannelInitializer<SocketChannel> {
         p.addLast(new RedisBulkStringAggregator());
         p.addLast(new RedisArrayAggregator());
         p.addLast(new RedisEncoder());
+        p.addLast(new ReplyEncoder());
         p.addLast(group, new RedisCommandHandler(RedisServerContext.getInstance()));
     }
 }

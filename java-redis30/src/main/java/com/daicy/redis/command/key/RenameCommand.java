@@ -11,19 +11,18 @@ import com.daicy.redis.annotation.ParamLength;
 import com.daicy.redis.command.DBCommand;
 import com.daicy.redis.storage.DictKey;
 import com.daicy.redis.storage.RedisDb;
-import io.netty.handler.codec.redis.RedisMessage;
-import io.netty.handler.codec.redis.SimpleStringRedisMessage;
+import com.daicy.redis.protocal.Reply;
 
-import static com.daicy.redis.storage.RedisConstants.NO_KEY;
-import static com.daicy.redis.storage.RedisConstants.OK;
+import static com.daicy.redis.protocal.ReplyConstants.OK;
 import static com.daicy.redis.storage.DictKey.safeKey;
+import static com.daicy.redis.protocal.ReplyConstants.NO_KEY;
 
 @Command("rename")
 @ParamLength(2)
 public class RenameCommand implements DBCommand {
 
     @Override
-    public RedisMessage execute(RedisDb db, Request request) {
+    public Reply execute(RedisDb db, Request request) {
         DictKey from = safeKey(request.getParamStr(0));
         DictKey to = safeKey(request.getParamStr(1));
         if (db.getDict().rename(from, to)) {

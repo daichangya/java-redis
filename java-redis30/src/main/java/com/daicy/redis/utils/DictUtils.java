@@ -4,15 +4,14 @@
  */
 package com.daicy.redis.utils;
 
+import com.daicy.redis.protocal.BulkReply;
+import com.daicy.redis.protocal.MultiBulkReply;
+import com.daicy.redis.protocal.Reply;
 import com.daicy.redis.storage.Dict;
 import com.daicy.redis.storage.DictKey;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
 import com.google.common.collect.Lists;
-import io.netty.handler.codec.redis.ArrayRedisMessage;
-import io.netty.handler.codec.redis.FullBulkStringRedisMessage;
-import io.netty.handler.codec.redis.RedisMessage;
-import io.netty.handler.codec.redis.SimpleStringRedisMessage;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.time.Instant;
@@ -20,16 +19,17 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.daicy.redis.protocal.ReplyConstants.NULL;
 import static java.time.Instant.now;
 
 public class DictUtils {
 
-    public static RedisMessage convertValue(DictValue value) {
+    public static Reply convertValue(DictValue value) {
         if (value != null) {
             switch (value.getType()) {
                 case STRING:
                     String string = value.getString();
-                    return new SimpleStringRedisMessage(string);
+                    return new BulkReply(string);
 //      case HASH:
 //          ImmutableMap<String, String> map = value.getHash();
 //          return array(keyValueList(map).toList());
@@ -46,16 +46,16 @@ public class DictUtils {
                     break;
             }
         }
-        return FullBulkStringRedisMessage.NULL_INSTANCE;
+        return NULL;
     }
 
-    public static ArrayRedisMessage toRedisMessage(List<String> values) {
+    public static Reply toRedisMessage(List<String> values) {
         if (CollectionUtils.isEmpty(values)) {
-            return ArrayRedisMessage.EMPTY_INSTANCE;
+            return new MultiBulkReply(null);
         }
-        List<RedisMessage> redisMessageList =
-                values.stream().map(value -> new SimpleStringRedisMessage(value)).collect(Collectors.toList());
-        return new ArrayRedisMessage(redisMessageList);
+        List<Reply> bulkReplayList =
+                values.stream().map(value -> new BulkReply(value)).collect(Collectors.toList());
+        return new MultiBulkReply(bulkReplayList);
     }
 
     public static List<DictValue> getValues(RedisDb db, List<String> keys) {

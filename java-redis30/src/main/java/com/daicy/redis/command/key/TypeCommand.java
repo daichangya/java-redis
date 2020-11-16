@@ -10,10 +10,11 @@ import com.daicy.redis.annotation.Command;
 import com.daicy.redis.annotation.ParamLength;
 import com.daicy.redis.annotation.ReadOnly;
 import com.daicy.redis.command.DBCommand;
+import com.daicy.redis.protocal.BulkReply;
 import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
-import io.netty.handler.codec.redis.RedisMessage;
+import com.daicy.redis.protocal.Reply;
 import io.netty.handler.codec.redis.SimpleStringRedisMessage;
 
 import static com.daicy.redis.storage.DictKey.safeKey;
@@ -24,12 +25,12 @@ import static com.daicy.redis.storage.DictKey.safeKey;
 public class TypeCommand implements DBCommand {
 
   @Override
-  public RedisMessage execute(RedisDb db, Request request) {
+  public Reply execute(RedisDb db, Request request) {
     DictValue value = db.getDict().get(safeKey(request.getParamStr(0)));
     if (value != null) {
-      return new SimpleStringRedisMessage(value.getType().text());
+      return new BulkReply(value.getType().text());
     } else {
-      return new SimpleStringRedisMessage(DataType.NONE.text());
+      return new BulkReply(DataType.NONE.text());
     }
   }
 }

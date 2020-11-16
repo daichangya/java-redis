@@ -6,9 +6,10 @@ package com.daicy.redis.command;
 
 
 import com.daicy.redis.Request;
-import io.netty.handler.codec.redis.RedisMessage;
+import com.daicy.redis.protocal.Reply;
+import com.daicy.redis.protocal.Reply;
 
 @FunctionalInterface
 public interface RedisCommand {
-  RedisMessage execute(Request request);
+  Reply execute(Request request);
 }

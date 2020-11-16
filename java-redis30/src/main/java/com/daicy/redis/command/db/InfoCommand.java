@@ -11,9 +11,10 @@ import com.daicy.redis.Request;
 import com.daicy.redis.annotation.Command;
 import com.daicy.redis.annotation.ReadOnly;
 import com.daicy.redis.command.DBCommand;
+import com.daicy.redis.protocal.BulkReply;
 import com.daicy.redis.storage.Dict;
 import com.daicy.redis.storage.RedisDb;
-import io.netty.handler.codec.redis.RedisMessage;
+import com.daicy.redis.protocal.Reply;
 import io.netty.handler.codec.redis.SimpleStringRedisMessage;
 import org.apache.commons.lang3.StringUtils;
 
@@ -153,7 +154,7 @@ public class InfoCommand implements DBCommand {
     private static final RedisServerContext redisServerContext = RedisServerContext.getInstance();
 
     @Override
-    public RedisMessage execute(RedisDb db, Request request) {
+    public Reply execute(RedisDb db, Request request) {
         Map<String, Map<String, String>> sections = new LinkedHashMap<>();
         String sectionName = request.getParamStr(0);
         if (StringUtils.isEmpty(sectionName)) {
@@ -163,7 +164,7 @@ public class InfoCommand implements DBCommand {
                 sections.put(section, section(section, redisServerContext));
             }
         }
-        return new SimpleStringRedisMessage(makeString(sections));
+        return new BulkReply(makeString(sections));
     }
 
     private String makeString(Map<String, Map<String, String>> sections) {

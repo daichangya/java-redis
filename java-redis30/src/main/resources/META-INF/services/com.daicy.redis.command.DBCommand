@@ -14,3 +14,11 @@ com.daicy.redis.command.key.KeysCommand
 com.daicy.redis.command.key.RenameCommand
 com.daicy.redis.command.key.TimeToLiveMillisCommand
 com.daicy.redis.command.key.TypeCommand
+com.daicy.redis.command.list.LeftPopCommand
+com.daicy.redis.command.list.LeftPushCommand
+com.daicy.redis.command.list.ListIndexCommand
+com.daicy.redis.command.list.ListLengthCommand
+com.daicy.redis.command.list.ListRangeCommand
+com.daicy.redis.command.list.ListSetCommand
+com.daicy.redis.command.list.RightPopCommand
+com.daicy.redis.command.list.RightPushCommand

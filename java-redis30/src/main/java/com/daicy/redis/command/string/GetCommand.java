@@ -10,27 +10,26 @@ import com.daicy.redis.Request;
 import com.daicy.redis.annotation.Command;
 import com.daicy.redis.annotation.ParamLength;
 import com.daicy.redis.command.DBCommand;
+import com.daicy.redis.protocal.BulkReply;
+import com.daicy.redis.protocal.Reply;
 import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
-import io.netty.handler.codec.redis.RedisMessage;
-import io.netty.handler.codec.redis.SimpleStringRedisMessage;
 import org.apache.commons.lang3.tuple.Pair;
 
-import static com.daicy.redis.storage.RedisConstants.TYPE_ERROR;
-import static io.netty.handler.codec.redis.FullBulkStringRedisMessage.NULL_INSTANCE;
+import static com.daicy.redis.protocal.ReplyConstants.NULL;
 
 @Command("get")
 @ParamLength(1)
 public class GetCommand implements DBCommand {
 
     @Override
-    public RedisMessage execute(RedisDb db, Request request) {
-        Pair<DictValue, RedisMessage> value =
+    public Reply execute(RedisDb db, Request request) {
+        Pair<DictValue, Reply> value =
                 db.lookupKeyOrReply(request.getParamStr(0),
-                        DataType.STRING, NULL_INSTANCE);
+                        DataType.STRING, NULL);
         return value.getRight() == null ?
-                new SimpleStringRedisMessage(value.getLeft().getString()) :
+                new BulkReply(value.getLeft().getString()) :
                 value.getRight();
     }
 }

@@ -7,20 +7,19 @@ package com.daicy.redis.command;
 
 import com.daicy.redis.Request;
 import com.daicy.redis.annotation.Command;
-import io.netty.handler.codec.redis.FixedRedisMessagePool;
-import io.netty.handler.codec.redis.RedisMessage;
-import io.netty.handler.codec.redis.SimpleStringRedisMessage;
+import com.daicy.redis.protocal.BulkReply;
+import com.daicy.redis.protocal.Reply;
+
+import static com.daicy.redis.protocal.ReplyConstants.PONG;
+
 
 @Command("ping")
 public class PingCommand implements RedisCommand {
 
-    public static final SimpleStringRedisMessage PONG =
-            FixedRedisMessagePool.INSTANCE.getSimpleString("PONG");
-
     @Override
-    public RedisMessage execute(Request request) {
+    public Reply execute(Request request) {
         if (request.getLength() > 0) {
-            return request.getParam(0);
+            return new BulkReply(request.getParamStr(0));
         } else {
             return PONG;
         }

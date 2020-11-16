@@ -8,14 +8,15 @@ package com.daicy.redis.command;
 import com.daicy.redis.Request;
 import com.daicy.redis.annotation.Command;
 import com.daicy.redis.annotation.ParamLength;
-import io.netty.handler.codec.redis.RedisMessage;
+import com.daicy.redis.protocal.BulkReply;
+import com.daicy.redis.protocal.Reply;
 
 @Command("echo")
 @ParamLength(1)
 public class EchoCommand implements RedisCommand {
 
   @Override
-  public RedisMessage execute(Request request) {
-    return request.getParam(0);
+  public Reply execute(Request request) {
+    return new BulkReply(request.getParamStr(0));
   }
 }

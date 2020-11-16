@@ -5,13 +5,13 @@
 package com.daicy.redis.command;
 
 import com.daicy.redis.Request;
-import io.netty.handler.codec.redis.ErrorRedisMessage;
-import io.netty.handler.codec.redis.RedisMessage;
+import com.daicy.redis.protocal.ErrorReply;
+import com.daicy.redis.protocal.Reply;
 
 
 class NullCommand implements RedisCommand {
     @Override
-    public RedisMessage execute(Request request) {
-        return new ErrorRedisMessage("ERR unknown command '" + request.getCommand() + "'");
+    public Reply execute(Request request) {
+        return new ErrorReply("ERR unknown command '" + request.getCommand() + "'");
     }
 }

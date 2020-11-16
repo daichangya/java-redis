@@ -11,7 +11,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.redis.ArrayRedisMessage;
-import io.netty.handler.codec.redis.RedisMessage;
+import com.daicy.redis.protocal.Reply;
 
 
 /**
@@ -42,7 +42,7 @@ public class RedisCommandHandler extends SimpleChannelInboundHandler {
         Request request = new DefaultRequest((ArrayRedisMessage) msg,
                 (RedisClientSession) redisServerContext.getClient(ctx.channel()));
         RedisCommand redisCommand = redisServerContext.getRedisCommand(request.getCommand());
-        RedisMessage reply = redisCommand.execute(request);
+        Reply reply = redisCommand.execute(request);
         ctx.write(reply);
         if (redisCommand instanceof QuitCommand) {
             ctx.close();

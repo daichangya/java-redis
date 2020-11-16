@@ -10,11 +10,12 @@ import com.daicy.redis.annotation.Command;
 import com.daicy.redis.annotation.ParamLength;
 import com.daicy.redis.annotation.ParamType;
 import com.daicy.redis.command.DBCommand;
+import com.daicy.redis.protocal.IntegerReply;
 import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
 import io.netty.handler.codec.redis.IntegerRedisMessage;
-import io.netty.handler.codec.redis.RedisMessage;
+import com.daicy.redis.protocal.Reply;
 
 import java.util.List;
 
@@ -26,7 +27,7 @@ import static com.daicy.redis.storage.DictKey.safeKey;
 public class LeftPushCommand implements DBCommand {
 
     @Override
-    public RedisMessage execute(RedisDb db, Request request) {
+    public Reply execute(RedisDb db, Request request) {
         List<String> paramsStrList = request.getParamsStrList();
         DictValue result = db.getDict().merge(safeKey(paramsStrList.get(0)),
                 DictValue.list(paramsStrList.subList(0, paramsStrList.size())),
@@ -35,6 +36,6 @@ public class LeftPushCommand implements DBCommand {
                     return oldValue;
                 });
 
-        return new IntegerRedisMessage(result.getList().size());
+        return new IntegerReply(result.getList().size());
     }
 }

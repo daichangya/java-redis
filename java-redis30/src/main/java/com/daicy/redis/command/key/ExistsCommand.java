@@ -10,11 +10,12 @@ import com.daicy.redis.annotation.Command;
 import com.daicy.redis.annotation.ParamLength;
 import com.daicy.redis.annotation.ReadOnly;
 import com.daicy.redis.command.DBCommand;
+import com.daicy.redis.protocal.IntegerReply;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
 import com.daicy.redis.utils.DictUtils;
 import io.netty.handler.codec.redis.IntegerRedisMessage;
-import io.netty.handler.codec.redis.RedisMessage;
+import com.daicy.redis.protocal.Reply;
 
 import java.util.List;
 
@@ -24,8 +25,8 @@ import java.util.List;
 public class ExistsCommand implements DBCommand {
 
   @Override
-  public RedisMessage execute(RedisDb db, Request request) {
+  public Reply execute(RedisDb db, Request request) {
     List<DictValue> result = DictUtils.getValues(db,request.getParamsStrList());
-    return new IntegerRedisMessage(result.size());
+    return new IntegerReply(result.size());
   }
 }

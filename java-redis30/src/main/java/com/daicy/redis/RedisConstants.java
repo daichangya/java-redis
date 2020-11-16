@@ -1,4 +1,4 @@
-package com.daicy.redis.storage;
+package com.daicy.redis;
 
 import io.netty.handler.codec.redis.ErrorRedisMessage;
 import io.netty.handler.codec.redis.FixedRedisMessagePool;

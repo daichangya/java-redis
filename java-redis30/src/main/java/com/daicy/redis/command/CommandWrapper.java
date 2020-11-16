@@ -6,9 +6,10 @@ package com.daicy.redis.command;
 
 import com.daicy.redis.Request;
 import com.daicy.redis.annotation.ParamLength;
+import com.daicy.redis.protocal.ErrorReply;
 import com.google.common.base.Preconditions;
 import io.netty.handler.codec.redis.ErrorRedisMessage;
-import io.netty.handler.codec.redis.RedisMessage;
+import com.daicy.redis.protocal.Reply;
 
 
 public class CommandWrapper implements RedisCommand {
@@ -26,9 +27,9 @@ public class CommandWrapper implements RedisCommand {
   }
 
   @Override
-  public RedisMessage execute(Request request) {
+  public Reply execute(Request request) {
     if (request.getLength() < params) {
-      return new ErrorRedisMessage("ERR wrong number of arguments for '" + request.getCommand() + "' command");
+      return new ErrorReply("ERR wrong number of arguments for '" + request.getCommand() + "' command");
     }
     return command.execute(request);
   }

@@ -25,7 +25,7 @@
 //    @Override
 //    public SimpleStringRedisMessage set(byte[] key0, byte[] value1) throws RedisException {
 //        _put(key0, value1);
-//        return RedisConstants.OK;
+//        return Constants.OK;
 //    }
 //
 //

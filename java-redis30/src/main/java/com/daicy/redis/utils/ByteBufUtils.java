@@ -1,6 +1,7 @@
 package com.daicy.redis.utils;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 
 /**
  * @author: create by daichangya
@@ -23,5 +24,9 @@ public class ByteBufUtils {
             offset = 0;
         }
         return bytes;
+    }
+
+    public static ByteBuf toByteBuf(byte[] bytes) {
+        return Unpooled.wrappedBuffer(bytes);
     }
 }

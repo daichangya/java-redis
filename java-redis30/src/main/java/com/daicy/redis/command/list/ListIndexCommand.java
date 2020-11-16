@@ -11,17 +11,18 @@ import com.daicy.redis.annotation.ParamLength;
 import com.daicy.redis.annotation.ParamType;
 import com.daicy.redis.annotation.ReadOnly;
 import com.daicy.redis.command.DBCommand;
+import com.daicy.redis.protocal.BulkReply;
+import com.daicy.redis.protocal.ErrorReply;
 import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
-import io.netty.handler.codec.redis.ErrorRedisMessage;
-import io.netty.handler.codec.redis.RedisMessage;
-import io.netty.handler.codec.redis.SimpleStringRedisMessage;
+import com.daicy.redis.protocal.Reply;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.LinkedList;
 
-import static io.netty.handler.codec.redis.FullBulkStringRedisMessage.NULL_INSTANCE;
+import static com.daicy.redis.protocal.ReplyConstants.NULL;
+
 
 @ReadOnly
 @Command("lindex")
@@ -30,10 +31,10 @@ import static io.netty.handler.codec.redis.FullBulkStringRedisMessage.NULL_INSTA
 public class ListIndexCommand implements DBCommand {
 
     @Override
-    public RedisMessage execute(RedisDb db, Request request) {
+    public Reply execute(RedisDb db, Request request) {
         try {
-            Pair<DictValue, RedisMessage> value =
-                    db.lookupKeyOrReply(request.getParamStr(0), DataType.LIST,NULL_INSTANCE);
+            Pair<DictValue, Reply> value =
+                    db.lookupKeyOrReply(request.getParamStr(0), DataType.LIST,NULL);
             if (null != value.getRight()) {
                 return value.getRight();
             }
@@ -44,13 +45,13 @@ public class ListIndexCommand implements DBCommand {
                 index = list.size() + index;
             }
             if (index < 0 || index >= list.size()) {
-                return NULL_INSTANCE;
+                return NULL;
             }
-            return new SimpleStringRedisMessage(list.get(index));
+            return new BulkReply(list.get(index));
         } catch (NumberFormatException e) {
-            return new ErrorRedisMessage("ERR value is not an integer or out of range");
+            return new ErrorReply("ERR value is not an integer or out of range");
         } catch (IndexOutOfBoundsException e) {
-            return NULL_INSTANCE;
+            return NULL;
         }
     }
 }
