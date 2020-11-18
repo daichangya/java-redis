@@ -8,7 +8,6 @@ import com.daicy.redis.utils.ByteBufUtils;
 import com.daicy.redis.utils.RedisMessageUtils;
 import com.google.common.base.Preconditions;
 import io.netty.handler.codec.redis.ArrayRedisMessage;
-import io.netty.handler.codec.redis.BulkStringRedisContent;
 import io.netty.handler.codec.redis.FullBulkStringRedisMessage;
 import io.netty.handler.codec.redis.RedisMessage;
 
@@ -20,22 +19,32 @@ public class DefaultRequest implements Request {
 
     private final String command;
 
-    private final ArrayRedisMessage params;
-
     private final RedisClientSession clientSession;
 
     private final List<String> paramsStrList;
 
-    public DefaultRequest(ArrayRedisMessage arrayRedisMessage, RedisClientSession clientSession) {
+    private final DefaultRedisServerContext serverContext;
+
+    public DefaultRequest(ArrayRedisMessage arrayRedisMessage, RedisClientSession clientSession
+            , DefaultRedisServerContext serverContext) {
         List<RedisMessage> messageList = arrayRedisMessage.children();
         FullBulkStringRedisMessage fullBulkStringRedisMessage =
                 (FullBulkStringRedisMessage) messageList.get(0);
         byte[] name = ByteBufUtils.getBytes(fullBulkStringRedisMessage.content());
         this.command = Preconditions.checkNotNull(new String(name).toLowerCase());
-        this.params = Preconditions.checkNotNull(new ArrayRedisMessage(messageList.subList(1, messageList.size())));
-        this.paramsStrList = params.children().stream().map(param -> RedisMessageUtils.toString(param))
+        List<RedisMessage> params = messageList.subList(1, messageList.size());
+        this.paramsStrList = params.stream().map(param -> RedisMessageUtils.toString(param))
                 .collect(Collectors.toList());
         this.clientSession = Preconditions.checkNotNull(clientSession);
+        this.serverContext = serverContext;
+    }
+
+    public DefaultRequest(String command,List<String> paramsStrList, RedisClientSession clientSession
+            , DefaultRedisServerContext serverContext) {
+        this.command = Preconditions.checkNotNull(command.toLowerCase());
+        this.paramsStrList = paramsStrList;
+        this.clientSession = clientSession;
+        this.serverContext = serverContext;
     }
 
     @Override
@@ -43,22 +52,6 @@ public class DefaultRequest implements Request {
         return command.toString();
     }
 
-    @Override
-    public ArrayRedisMessage getParams() {
-        return params;
-    }
-
-    @Override
-    public RedisMessage getParam(int i) {
-        if (i < params.children().size()) {
-            RedisMessage redisMessage = params.children().get(i);
-            if (redisMessage instanceof BulkStringRedisContent) {
-                return ((BulkStringRedisContent) redisMessage).duplicate();
-            }
-            return redisMessage;
-        }
-        return null;
-    }
 
     @Override
     public String getParamStr(int i) {
@@ -72,7 +65,7 @@ public class DefaultRequest implements Request {
 
     @Override
     public int getLength() {
-        return params.children().size();
+        return paramsStrList.size();
     }
 
     @Override
@@ -81,8 +74,13 @@ public class DefaultRequest implements Request {
     }
 
     @Override
+    public DefaultRedisServerContext getServerContext() {
+        return serverContext;
+    }
+
+    @Override
     public boolean isEmpty() {
-        return params.children().isEmpty();
+        return paramsStrList.isEmpty();
     }
 
     @Override
@@ -93,6 +91,6 @@ public class DefaultRequest implements Request {
 
     @Override
     public String toString() {
-        return command + "[" + params.children().size() + "]: " + params;
+        return command + "[" + paramsStrList.size() + "]: " + paramsStrList;
     }
 }

@@ -10,17 +10,17 @@ import com.daicy.redis.annotation.Command;
 import com.daicy.redis.annotation.ParamLength;
 import com.daicy.redis.annotation.ParamType;
 import com.daicy.redis.command.DBCommand;
-import com.daicy.redis.protocal.ErrorReply;
+import com.daicy.redis.protocal.ErrorRedisMessage;
+import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
-import com.daicy.redis.protocal.Reply;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.LinkedList;
 
-import static com.daicy.redis.protocal.ReplyConstants.*;
+import static com.daicy.redis.protocal.RedisMessageConstants.*;
 
 
 @Command("lset")
@@ -29,9 +29,9 @@ import static com.daicy.redis.protocal.ReplyConstants.*;
 public class ListSetCommand implements DBCommand {
 
     @Override
-    public Reply execute(RedisDb db, Request request) {
+    public RedisMessage execute(RedisDb db, Request request) {
         try {
-            Pair<DictValue, Reply> value =
+            Pair<DictValue, RedisMessage> value =
                     db.lookupKeyOrReply(request.getParamStr(0), DataType.LIST, NO_KEY);
             if (null != value.getRight()) {
                 return value.getRight();
@@ -50,7 +50,7 @@ public class ListSetCommand implements DBCommand {
             list.set(index, request.getParamStr(2));
             return OK;
         } catch (NumberFormatException e) {
-            return new ErrorReply("ERR value is not an integer or out of range");
+            return new ErrorRedisMessage("ERR value is not an integer or out of range");
         } catch (IndexOutOfBoundsException e) {
             return OUT_RANGE;
         }

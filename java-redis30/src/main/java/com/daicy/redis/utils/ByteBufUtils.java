@@ -1,5 +1,6 @@
 package com.daicy.redis.utils;
 
+import com.daicy.redis.codec.StringCodec;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
@@ -10,6 +11,9 @@ import io.netty.buffer.Unpooled;
  * @date:11/10/20
  */
 public class ByteBufUtils {
+
+    private static StringCodec stringCodec = new StringCodec();
+
     public static byte[] getBytes(ByteBuf buf) {
         byte[] bytes;
         int offset;
@@ -28,5 +32,9 @@ public class ByteBufUtils {
 
     public static ByteBuf toByteBuf(byte[] bytes) {
         return Unpooled.wrappedBuffer(bytes);
+    }
+
+    public static ByteBuf toByteBuf(String message) {
+        return Unpooled.wrappedBuffer(stringCodec.encodeValue(message));
     }
 }

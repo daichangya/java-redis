@@ -45,6 +45,8 @@ public class ServerBuilder {
 
     private ChannelInitializer channelInitializer;
 
+    private ServerContext serverContext;
+
     private ServerBuilder(int port) {
         this.port = port;
     }
@@ -146,6 +148,12 @@ public class ServerBuilder {
         return this;
     }
 
+
+    public ServerBuilder setServerContext(ServerContext serverContext) {
+        this.serverContext = serverContext;
+        return this;
+    }
+
     public InetAddress getInetAddress() {
         return inetAddress;
     }
@@ -211,6 +219,10 @@ public class ServerBuilder {
         return channelInitializer;
     }
 
+    public ServerContext getServerContext() {
+        return serverContext;
+    }
+
     public Server build() {
         if (minWorkers > maxWorkers) {
             throw new IllegalArgumentException("minWorkers is greater than maxWorkers");
@@ -218,6 +230,9 @@ public class ServerBuilder {
 
         if (maxPendingRequest <= 0) {
             throw new IllegalArgumentException("maxPendingRequest must be greater than 0");
+        }
+        if(null == serverContext){
+            serverContext = new DefaultServerContext();
         }
 
         return new ServerImpl(this);

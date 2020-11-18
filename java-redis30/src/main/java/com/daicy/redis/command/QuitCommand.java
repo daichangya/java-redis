@@ -7,15 +7,15 @@ package com.daicy.redis.command;
 
 import com.daicy.redis.Request;
 import com.daicy.redis.annotation.Command;
-import com.daicy.redis.protocal.Reply;
-import com.daicy.redis.protocal.ReplyConstants;
+import com.daicy.redis.protocal.RedisMessage;
+import com.daicy.redis.protocal.RedisMessageConstants;
 
 @Command("quit")
 public class QuitCommand implements RedisCommand {
 
   @Override
-  public Reply execute(Request request) {
-    return ReplyConstants.OK;
+  public RedisMessage execute(Request request) {
+    return RedisMessageConstants.OK;
   }
 
 }

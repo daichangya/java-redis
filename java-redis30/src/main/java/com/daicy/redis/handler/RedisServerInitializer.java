@@ -15,23 +15,25 @@
  */
 package com.daicy.redis.handler;
 
-import com.daicy.redis.RedisServerContext;
-import com.daicy.remoting.transport.netty4.http.HttpServerHandler;
+import com.daicy.redis.DefaultRedisServerContext;
+import com.daicy.remoting.transport.netty4.ServerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.http.HttpObjectAggregator;
-import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.redis.RedisArrayAggregator;
 import io.netty.handler.codec.redis.RedisBulkStringAggregator;
 import io.netty.handler.codec.redis.RedisDecoder;
 import io.netty.handler.codec.redis.RedisEncoder;
-import io.netty.handler.stream.ChunkedWriteHandler;
-import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 
 public class RedisServerInitializer extends ChannelInitializer<SocketChannel> {
     private static final DefaultEventExecutorGroup group = new DefaultEventExecutorGroup(1);
+
+    private ServerContext serverContext;
+
+    public RedisServerInitializer(ServerContext serverContext) {
+        this.serverContext = serverContext;
+    }
 
     @Override
     public void initChannel(SocketChannel ch) {
@@ -41,6 +43,6 @@ public class RedisServerInitializer extends ChannelInitializer<SocketChannel> {
         p.addLast(new RedisArrayAggregator());
         p.addLast(new RedisEncoder());
         p.addLast(new ReplyEncoder());
-        p.addLast(group, new RedisCommandHandler(RedisServerContext.getInstance()));
+        p.addLast(group, new RedisCommandHandler((DefaultRedisServerContext) serverContext));
     }
 }

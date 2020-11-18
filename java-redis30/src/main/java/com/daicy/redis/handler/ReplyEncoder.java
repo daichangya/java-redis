@@ -16,6 +16,9 @@
 package com.daicy.redis.handler;
 
 import com.daicy.redis.protocal.*;
+import com.daicy.redis.protocal.ErrorRedisMessage;
+import com.daicy.redis.protocal.IntegerRedisMessage;
+import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.utils.ByteBufUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.CodecException;
@@ -24,16 +27,15 @@ import io.netty.handler.codec.redis.*;
 import io.netty.util.internal.ObjectUtil;
 import io.netty.util.internal.UnstableApi;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Encodes {@link RedisMessage} into bytes following
+ * Encodes {@link io.netty.handler.codec.redis.RedisMessage} into bytes following
  * <a href="http://redis.io/topics/protocol">RESP (REdis Serialization Protocol)</a>.
  */
 @UnstableApi
-public class ReplyEncoder extends MessageToMessageEncoder<Reply> {
+public class ReplyEncoder extends MessageToMessageEncoder<RedisMessage> {
 
     private final RedisMessagePool messagePool;
 
@@ -54,7 +56,7 @@ public class ReplyEncoder extends MessageToMessageEncoder<Reply> {
     }
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, Reply reply, List<Object> out) throws Exception {
+    protected void encode(ChannelHandlerContext ctx, RedisMessage reply, List<Object> out) throws Exception {
         try {
             writeRedisMessage(reply, out);
         } catch (CodecException e) {
@@ -64,27 +66,27 @@ public class ReplyEncoder extends MessageToMessageEncoder<Reply> {
         }
     }
 
-    private void writeRedisMessage(Reply reply, List<Object> out) {
-        if (reply instanceof StatusReply) {
-            out.add(new SimpleStringRedisMessage(((StatusReply) reply).data()));
-        } else if (reply instanceof ErrorReply) {
-            out.add(new ErrorRedisMessage(((ErrorReply) reply).data()));
-        } else if (reply instanceof IntegerReply) {
-            out.add(new IntegerRedisMessage(((IntegerReply) reply).data()));
-        } else if (reply instanceof BulkReply) {
-            BulkReply bulkReply = (BulkReply) reply;
+    private void writeRedisMessage(RedisMessage reply, List<Object> out) {
+        if (reply instanceof StatusRedisMessage) {
+            out.add(new SimpleStringRedisMessage(((StatusRedisMessage) reply).data()));
+        } else if (reply instanceof ErrorRedisMessage) {
+            out.add(new io.netty.handler.codec.redis.ErrorRedisMessage(((ErrorRedisMessage) reply).data()));
+        } else if (reply instanceof IntegerRedisMessage) {
+            out.add(new io.netty.handler.codec.redis.IntegerRedisMessage(((IntegerRedisMessage) reply).data()));
+        } else if (reply instanceof BulkRedisMessage) {
+            BulkRedisMessage bulkReply = (BulkRedisMessage) reply;
             if (null == bulkReply.data()) {
                 out.add(FullBulkStringRedisMessage.NULL_INSTANCE);
             } else {
-                out.add(new FullBulkStringRedisMessage(ByteBufUtils.toByteBuf(((BulkReply) reply).data())));
+                out.add(new FullBulkStringRedisMessage(ByteBufUtils.toByteBuf(((BulkRedisMessage) reply).data())));
             }
-        } else if (reply instanceof MultiBulkReply) {
-            MultiBulkReply multiBulkReply = (MultiBulkReply) reply;
+        } else if (reply instanceof MultiBulkRedisMessage) {
+            MultiBulkRedisMessage multiBulkReply = (MultiBulkRedisMessage) reply;
             if (null == multiBulkReply.data()) {
                 out.add(ArrayRedisMessage.NULL_INSTANCE);
             } else {
                 ArrayRedisMessage arrayRedisMessage = new ArrayRedisMessage(multiBulkReply.data().stream().map(
-                        entry -> new FullBulkStringRedisMessage(ByteBufUtils.toByteBuf(((BulkReply) entry).data()))).collect(Collectors.toList()));
+                        entry -> new FullBulkStringRedisMessage(ByteBufUtils.toByteBuf(((BulkRedisMessage) entry).data()))).collect(Collectors.toList()));
                 out.add(arrayRedisMessage);
             }
         } else {

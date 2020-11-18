@@ -11,17 +11,17 @@ import com.daicy.redis.annotation.ParamLength;
 import com.daicy.redis.annotation.ParamType;
 import com.daicy.redis.annotation.ReadOnly;
 import com.daicy.redis.command.DBCommand;
-import com.daicy.redis.protocal.BulkReply;
-import com.daicy.redis.protocal.ErrorReply;
+import com.daicy.redis.protocal.BulkRedisMessage;
+import com.daicy.redis.protocal.ErrorRedisMessage;
 import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
-import com.daicy.redis.protocal.Reply;
+import com.daicy.redis.protocal.RedisMessage;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.LinkedList;
 
-import static com.daicy.redis.protocal.ReplyConstants.NULL;
+import static com.daicy.redis.protocal.RedisMessageConstants.NULL;
 
 
 @ReadOnly
@@ -31,9 +31,9 @@ import static com.daicy.redis.protocal.ReplyConstants.NULL;
 public class ListIndexCommand implements DBCommand {
 
     @Override
-    public Reply execute(RedisDb db, Request request) {
+    public RedisMessage execute(RedisDb db, Request request) {
         try {
-            Pair<DictValue, Reply> value =
+            Pair<DictValue, RedisMessage> value =
                     db.lookupKeyOrReply(request.getParamStr(0), DataType.LIST,NULL);
             if (null != value.getRight()) {
                 return value.getRight();
@@ -47,9 +47,9 @@ public class ListIndexCommand implements DBCommand {
             if (index < 0 || index >= list.size()) {
                 return NULL;
             }
-            return new BulkReply(list.get(index));
+            return new BulkRedisMessage(list.get(index));
         } catch (NumberFormatException e) {
-            return new ErrorReply("ERR value is not an integer or out of range");
+            return new ErrorRedisMessage("ERR value is not an integer or out of range");
         } catch (IndexOutOfBoundsException e) {
             return NULL;
         }

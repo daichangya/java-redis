@@ -2,16 +2,13 @@ package com.daicy.redis.handler;
 
 import com.daicy.redis.DefaultRequest;
 import com.daicy.redis.RedisClientSession;
-import com.daicy.redis.RedisServerContext;
+import com.daicy.redis.DefaultRedisServerContext;
 import com.daicy.redis.Request;
-import com.daicy.redis.command.QuitCommand;
-import com.daicy.redis.command.RedisCommand;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.redis.ArrayRedisMessage;
-import com.daicy.redis.protocal.Reply;
+import com.daicy.redis.protocal.RedisMessage;
 
 
 /**
@@ -20,9 +17,9 @@ import com.daicy.redis.protocal.Reply;
 @ChannelHandler.Sharable
 public class RedisCommandHandler extends SimpleChannelInboundHandler {
 
-    private  RedisServerContext redisServerContext;
+    private DefaultRedisServerContext redisServerContext;
 
-    public RedisCommandHandler(RedisServerContext redisServerContext) {
+    public RedisCommandHandler(DefaultRedisServerContext redisServerContext) {
         this.redisServerContext = redisServerContext;
     }
 
@@ -40,12 +37,11 @@ public class RedisCommandHandler extends SimpleChannelInboundHandler {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
         Request request = new DefaultRequest((ArrayRedisMessage) msg,
-                (RedisClientSession) redisServerContext.getClient(ctx.channel()));
-        RedisCommand redisCommand = redisServerContext.getRedisCommand(request.getCommand());
-        Reply reply = redisCommand.execute(request);
+                (RedisClientSession) redisServerContext.getClient(ctx.channel()), redisServerContext);
+        RedisMessage reply = redisServerContext.executeCommand(request);
         ctx.write(reply);
-        if (redisCommand instanceof QuitCommand) {
-            ctx.close();
-        }
+//        if (redisCommand instanceof QuitCommand) {
+//            ctx.close();
+//        }
     }
 }

@@ -5,11 +5,11 @@
 package com.daicy.redis.command;
 
 import com.daicy.redis.Request;
-import com.daicy.redis.protocal.Reply;
+import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.storage.RedisDb;
 
 
 @FunctionalInterface
 public interface DBCommand {
-  Reply execute(RedisDb db, Request request);
+  RedisMessage execute(RedisDb db, Request request);
 }

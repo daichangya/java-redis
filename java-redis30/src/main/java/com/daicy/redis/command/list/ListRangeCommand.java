@@ -6,19 +6,18 @@ package com.daicy.redis.command.list;
 
 
 import com.daicy.redis.Request;
-import com.daicy.redis.ServiceLoaderUtils;
 import com.daicy.redis.annotation.Command;
 import com.daicy.redis.annotation.ParamLength;
 import com.daicy.redis.annotation.ParamType;
 import com.daicy.redis.annotation.ReadOnly;
 import com.daicy.redis.command.DBCommand;
-import com.daicy.redis.protocal.ErrorReply;
+import com.daicy.redis.protocal.ErrorRedisMessage;
+import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
 import com.daicy.redis.utils.DictUtils;
-import io.netty.handler.codec.redis.ErrorRedisMessage;
-import com.daicy.redis.protocal.Reply;
+import com.daicy.redis.utils.RedisMessageUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +35,7 @@ public class ListRangeCommand implements DBCommand {
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @Override
-    public Reply execute(RedisDb db, Request request) {
+    public RedisMessage execute(RedisDb db, Request request) {
         try {
             DictValue value = db.getDict().getOrDefault(safeKey(request.getParamStr(0)), DictValue.EMPTY_LIST);
             List<String> list = value.getList();
@@ -56,10 +55,10 @@ public class ListRangeCommand implements DBCommand {
             // TODO: use Array
             List<String> result = list.stream().skip(min).limit((max - min) + 1).collect(Collectors.toList());
 
-            return DictUtils.toRedisMessage(result);
+            return RedisMessageUtils.toRedisMessage(result);
         } catch (NumberFormatException e) {
             LOG.error("ListRangeCommand error :", e);
-            return new ErrorReply("ERR value is not an integer or out of range");
+            return new ErrorRedisMessage("ERR value is not an integer or out of range");
         }
     }
 }

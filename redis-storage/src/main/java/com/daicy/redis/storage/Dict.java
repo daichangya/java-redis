@@ -6,7 +6,9 @@ package com.daicy.redis.storage;
 
 
 import com.google.common.collect.ImmutableSet;
+import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.List;
 import java.util.function.BiFunction;
 
 
@@ -28,9 +30,9 @@ public interface Dict {
 
     ImmutableSet<DictKey> keySet();
 
-//  Sequence<DictValue> values();
+    //  Sequence<DictValue> values();
 //
-//  ImmutableSet<Tuple2<DictKey, DictValue>> entrySet();
+    List<Pair<DictKey, DictValue>> entryList();
 //
 //  default String getString(String key) {
 //    return getOrDefault(safeKey(key), DictValue.EMPTY_STRING).getString();
@@ -56,13 +58,13 @@ public interface Dict {
 //    map.forEach(this::put);
 //  }
 //
-//  default DictValue putIfAbsent(DictKey key, DictValue value) {
-//    DictValue oldValue = get(key);
-//    if (oldValue == null) {
-//        oldValue = put(key, value);
-//    }
-//    return oldValue;
-//  }
+  default DictValue putIfAbsent(DictKey key, DictValue value) {
+    DictValue oldValue = get(key);
+    if (oldValue == null) {
+        oldValue = put(key, value);
+    }
+    return oldValue;
+  }
 //
     default DictValue merge(DictKey key, DictValue value,
                             BiFunction<DictValue, DictValue, DictValue> remappingFunction) {

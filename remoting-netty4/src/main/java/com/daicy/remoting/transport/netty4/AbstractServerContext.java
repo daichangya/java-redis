@@ -44,11 +44,11 @@ public abstract class AbstractServerContext implements ServerContext<ClientSessi
 
     @Override
     public ClientSession getClient(Channel channel) {
-        return clients.computeIfAbsent(sourceKey(channel),key -> newSession(channel));
+        return clients.computeIfAbsent(sourceKey(channel), key -> newSession(channel));
     }
 
-    protected ClientSession newSession(Channel channel) {
-        return new ClientSession(sourceKey(channel),channel);
+    public ClientSession newSession(Channel channel) {
+        return new ClientSession(sourceKey(channel), channel);
     }
 
     public String sourceKey(Channel channel) {

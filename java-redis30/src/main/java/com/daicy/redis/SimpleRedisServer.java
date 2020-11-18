@@ -20,7 +20,7 @@
 //     *
 //     * @param key0
 //     * @param value1
-//     * @return StatusReply
+//     * @return StatusRedisMessage
 //     */
 //    @Override
 //    public SimpleStringRedisMessage set(byte[] key0, byte[] value1) throws RedisException {
@@ -34,7 +34,7 @@
 //     * String
 //     *
 //     * @param key0
-//     * @return BulkReply
+//     * @return BulkRedisMessage
 //     */
 //    @Override
 //    public FullBulkStringRedisMessage get(byte[] key0) throws RedisException {

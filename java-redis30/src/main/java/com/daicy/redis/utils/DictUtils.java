@@ -4,9 +4,9 @@
  */
 package com.daicy.redis.utils;
 
-import com.daicy.redis.protocal.BulkReply;
-import com.daicy.redis.protocal.MultiBulkReply;
-import com.daicy.redis.protocal.Reply;
+import com.daicy.redis.protocal.BulkRedisMessage;
+import com.daicy.redis.protocal.MultiBulkRedisMessage;
+import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.storage.Dict;
 import com.daicy.redis.storage.DictKey;
 import com.daicy.redis.storage.DictValue;
@@ -19,23 +19,23 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.daicy.redis.protocal.ReplyConstants.NULL;
+import static com.daicy.redis.protocal.RedisMessageConstants.NULL;
 import static java.time.Instant.now;
 
 public class DictUtils {
 
-    public static Reply convertValue(DictValue value) {
+    public static RedisMessage convertValue(DictValue value) {
         if (value != null) {
             switch (value.getType()) {
                 case STRING:
                     String string = value.getString();
-                    return new BulkReply(string);
+                    return new BulkRedisMessage(string);
 //      case HASH:
 //          ImmutableMap<String, String> map = value.getHash();
 //          return array(keyValueList(map).toList());
                 case LIST:
                     List<String> list = value.getList();
-                    return toRedisMessage(list);
+                    return RedisMessageUtils.toRedisMessage(list);
 //      case SET:
 //          ImmutableSet<String> set = value.getSet();
 //          return convertArray(set.toSet());
@@ -49,14 +49,6 @@ public class DictUtils {
         return NULL;
     }
 
-    public static Reply toRedisMessage(List<String> values) {
-        if (CollectionUtils.isEmpty(values)) {
-            return new MultiBulkReply(null);
-        }
-        List<Reply> bulkReplayList =
-                values.stream().map(value -> new BulkReply(value)).collect(Collectors.toList());
-        return new MultiBulkReply(bulkReplayList);
-    }
 
     public static List<DictValue> getValues(RedisDb db, List<String> keys) {
         if (CollectionUtils.isEmpty(keys) || null == db.getDict()) {

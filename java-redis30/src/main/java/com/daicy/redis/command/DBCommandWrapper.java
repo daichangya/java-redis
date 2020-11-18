@@ -5,11 +5,10 @@
 package com.daicy.redis.command;
 
 
-import com.daicy.redis.RedisServerContext;
 import com.daicy.redis.Request;
 import com.daicy.redis.annotation.*;
-import com.daicy.redis.protocal.ErrorReply;
-import com.daicy.redis.protocal.Reply;
+import com.daicy.redis.protocal.ErrorRedisMessage;
+import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.RedisDb;
 
@@ -53,26 +52,26 @@ public class DBCommandWrapper implements RedisCommand {
     }
 
     @Override
-    public Reply execute(Request request) {
+    public RedisMessage execute(Request request) {
         // FIXME: ugly piece of code, please refactor
-        RedisDb db = RedisServerContext.getInstance().getRedisDb(
+        RedisDb db = request.getServerContext().getRedisDb(
                 request.getClientSession().getDictNum());
         if (request.getLength() < params) {
-            return new ErrorReply("ERR wrong number of arguments for '" + request.getCommand() + "' command");
+            return new ErrorRedisMessage("ERR wrong number of arguments for '" + request.getCommand() + "' command");
         }
         if (command instanceof DBCommand) {
             return executeDBCommand(db, request);
         } else if (command instanceof RedisCommand) {
             return executeCommand(request);
         }
-        return new ErrorReply("invalid command type: " + command.getClass());
+        return new ErrorRedisMessage("invalid command type: " + command.getClass());
     }
 
-    private Reply executeCommand(Request request) {
+    private RedisMessage executeCommand(Request request) {
         return ((RedisCommand) command).execute(request);
     }
 
-    private Reply executeDBCommand(RedisDb db, Request request) {
+    private RedisMessage executeDBCommand(RedisDb db, Request request) {
         return ((DBCommand) command).execute(db, request);
     }
 

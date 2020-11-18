@@ -7,9 +7,9 @@ package com.daicy.redis.command;
 
 import com.daicy.redis.Request;
 import com.daicy.redis.annotation.Command;
-import com.daicy.redis.protocal.BulkReply;
-import com.daicy.redis.protocal.MultiBulkReply;
-import com.daicy.redis.protocal.Reply;
+import com.daicy.redis.protocal.BulkRedisMessage;
+import com.daicy.redis.protocal.MultiBulkRedisMessage;
+import com.daicy.redis.protocal.RedisMessage;
 import com.google.common.collect.Lists;
 
 import java.time.Clock;
@@ -21,12 +21,12 @@ public class TimeCommand implements RedisCommand {
     private static final int SCALE = 1000;
 
     @Override
-    public Reply execute(Request request) {
+    public RedisMessage execute(Request request) {
         long currentTimeMillis = Clock.systemDefaultZone().millis();
-        List<Reply> replyList = Lists.newArrayList();
-        replyList.add(new BulkReply(seconds(currentTimeMillis)));
-        replyList.add(new BulkReply(microseconds(currentTimeMillis)));
-        return new MultiBulkReply(replyList);
+        List<RedisMessage> replyList = Lists.newArrayList();
+        replyList.add(new BulkRedisMessage(seconds(currentTimeMillis)));
+        replyList.add(new BulkRedisMessage(microseconds(currentTimeMillis)));
+        return new MultiBulkRedisMessage(replyList);
     }
 
     private static String seconds(long currentTimeMillis) {

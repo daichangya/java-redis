@@ -5,19 +5,19 @@
 package com.daicy.redis.storage;
 
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
+import com.google.common.collect.*;
 
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toCollection;
 
 public class DictValue implements Serializable {
 
@@ -25,8 +25,8 @@ public class DictValue implements Serializable {
 
   public static final DictValue EMPTY_STRING = string("");
   public static final DictValue EMPTY_LIST = list();
-//  public static final DictValue EMPTY_SET = set();
-//  public static final DictValue EMPTY_ZSET = zset();
+  public static final DictValue EMPTY_SET = set(Sets.newHashSet());
+  public static final DictValue EMPTY_ZSET = zset();
 //  public static final DictValue EMPTY_HASH = hash();
   public static final DictValue NULL = null;
 
@@ -58,12 +58,12 @@ public class DictValue implements Serializable {
     return getValue();
   }
 
-  public ImmutableSet<String> getSet() {
+  public Set<String> getSet() {
     requiredType(DataType.SET);
     return getValue();
   }
 
-  public NavigableSet<Entry<Double, String>> getSortedSet() {
+  public SortedSet getSortedSet() {
     requiredType(DataType.ZSET);
     return getValue();
   }
@@ -124,26 +124,26 @@ public class DictValue implements Serializable {
 //    return new DictValue(DataType.SET, values.asSet());
 //  }
 //
-//  public static DictValue set(Collection<String> values) {
-//    return new DictValue(DataType.SET, ImmutableSet.from(requireNonNull(values).stream()));
-//  }
+  public static DictValue set(Collection<String> values) {
+    return new DictValue(DataType.SET, Sets.newHashSet(requireNonNull(values)));
+  }
 //
 //  public static DictValue set(String... values) {
 //    return new DictValue(DataType.SET, ImmutableSet.from(Stream.of(values)));
 //  }
 //
-//  public static DictValue zset(Collection<Entry<Double, String>> values) {
-//    return new DictValue(DataType.ZSET,
-//        requireNonNull(values).stream().collect(collectingAndThen(toSortedSet(),
-//                                                                  Collections::unmodifiableNavigableSet)));
-//  }
-//
-//  @SafeVarargs
-//  public static DictValue zset(Entry<Double, String>... values) {
-//    return new DictValue(DataType.ZSET,
-//        Stream.of(values).collect(collectingAndThen(toSortedSet(),
-//                                                    Collections::unmodifiableNavigableSet)));
-//  }
+  public static DictValue zset(Collection<Entry<Double, String>> values) {
+    return new DictValue(DataType.ZSET,
+        requireNonNull(values).stream().collect(collectingAndThen(toSortedSet(),
+                                                                  Collections::unmodifiableNavigableSet)));
+  }
+
+  @SafeVarargs
+  public static DictValue zset(Entry<Double, String>... values) {
+    return new DictValue(DataType.ZSET,
+        Stream.of(values).collect(collectingAndThen(toSortedSet(),
+                                                    Collections::unmodifiableNavigableSet)));
+  }
 //
 //  public static DictValue hash(ImmutableMap<String, String> values) {
 //    return new DictValue(DataType.HASH, values);
@@ -174,13 +174,13 @@ public class DictValue implements Serializable {
 //    return Tuple.of(key, value);
 //  }
 //
-//  public static Entry<Double, String> score(double score, String value) {
-//    return new SimpleEntry<>(score, value);
-//  }
-//
-//  private static Collector<Entry<Double, String>, ?, NavigableSet<Entry<Double, String>>> toSortedSet() {
-//    return toCollection(SortedSet::new);
-//  }
+  public static Entry<Double, String> score(double score, String value) {
+    return new AbstractMap.SimpleEntry<>(score, value);
+  }
+
+  private static Collector<Entry<Double, String>, ?, NavigableSet<Entry<Double, String>>> toSortedSet() {
+    return toCollection(SortedSet::new);
+  }
 
   public long timeToLive(Instant now) {
     return Duration.between(now, Instant.ofEpochMilli(getLong())).toMillis();

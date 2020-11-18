@@ -1,7 +1,7 @@
 package com.daicy.redis.original.impl;
 
 
-import com.daicy.redis.storage.original.DictEntry;
+import com.daicy.redis.original.DictEntry;
 
 /**
  * @author: create by daichangya

@@ -10,8 +10,8 @@ import com.daicy.redis.annotation.Command;
 import com.daicy.redis.annotation.ParamLength;
 import com.daicy.redis.annotation.ParamType;
 import com.daicy.redis.command.DBCommand;
-import com.daicy.redis.protocal.BulkReply;
-import com.daicy.redis.protocal.Reply;
+import com.daicy.redis.protocal.BulkRedisMessage;
+import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
@@ -20,7 +20,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.LinkedList;
 
-import static com.daicy.redis.protocal.ReplyConstants.NULL;
+import static com.daicy.redis.protocal.RedisMessageConstants.NULL;
 
 @Command("rpop")
 @ParamLength(1)
@@ -28,8 +28,8 @@ import static com.daicy.redis.protocal.ReplyConstants.NULL;
 public class RightPopCommand implements DBCommand {
 
     @Override
-    public Reply execute(RedisDb db, Request request) {
-        Pair<DictValue, Reply> value =
+    public RedisMessage execute(RedisDb db, Request request) {
+        Pair<DictValue, RedisMessage> value =
                 db.lookupKeyOrReply(request.getParamStr(0), DataType.LIST, NULL);
         if (null != value.getRight()) {
             return value.getRight();
@@ -38,6 +38,6 @@ public class RightPopCommand implements DBCommand {
         if (CollectionUtils.isEmpty(dictValueList)) {
             return NULL;
         }
-        return new BulkReply(dictValueList.removeLast());
+        return new BulkRedisMessage(dictValueList.removeLast());
     }
 }

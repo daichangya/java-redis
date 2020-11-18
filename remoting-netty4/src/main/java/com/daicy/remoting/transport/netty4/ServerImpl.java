@@ -121,6 +121,7 @@ public class ServerImpl implements Server {
     }
 
     private void started(Server server) {
+        builder.getServerContext().setServer(server);
         startFuture.complete(server);
     }
 
@@ -150,6 +151,7 @@ public class ServerImpl implements Server {
                 channel.close();
                 log.info("shutdowning!");
             }
+            builder.getServerContext().stop();
             channelsCloseFuture.complete(this);
             return shutdownFuture;
         }
@@ -169,6 +171,12 @@ public class ServerImpl implements Server {
             checkState(started, "Not started");
             return channel.localAddress();
         }
+    }
+
+    @Override
+    public void init() {
+        builder.getServerContext().init();
+        builder.getServerContext().start();
     }
 
 }

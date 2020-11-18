@@ -6,16 +6,14 @@
 package com.daicy.redis.command.db;
 
 
-import com.daicy.redis.RedisServerContext;
+import com.daicy.redis.DefaultRedisServerContext;
 import com.daicy.redis.Request;
 import com.daicy.redis.annotation.Command;
 import com.daicy.redis.annotation.ReadOnly;
 import com.daicy.redis.command.DBCommand;
-import com.daicy.redis.protocal.BulkReply;
-import com.daicy.redis.storage.Dict;
+import com.daicy.redis.protocal.BulkRedisMessage;
 import com.daicy.redis.storage.RedisDb;
-import com.daicy.redis.protocal.Reply;
-import io.netty.handler.codec.redis.SimpleStringRedisMessage;
+import com.daicy.redis.protocal.RedisMessage;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.AbstractMap.SimpleEntry;
@@ -151,10 +149,9 @@ public class InfoCommand implements DBCommand {
     private static final String SECTION_REPLICATION = "replication";
     private static final String SECTION_SERVER = "server";
 
-    private static final RedisServerContext redisServerContext = RedisServerContext.getInstance();
-
     @Override
-    public Reply execute(RedisDb db, Request request) {
+    public RedisMessage execute(RedisDb db, Request request) {
+        DefaultRedisServerContext redisServerContext = request.getServerContext();
         Map<String, Map<String, String>> sections = new LinkedHashMap<>();
         String sectionName = request.getParamStr(0);
         if (StringUtils.isEmpty(sectionName)) {
@@ -164,7 +161,7 @@ public class InfoCommand implements DBCommand {
                 sections.put(section, section(section, redisServerContext));
             }
         }
-        return new BulkReply(makeString(sections));
+        return new BulkRedisMessage(makeString(sections));
     }
 
     private String makeString(Map<String, Map<String, String>> sections) {
@@ -186,7 +183,7 @@ public class InfoCommand implements DBCommand {
                 SECTION_COMMANDSTATS, SECTION_KEYSPACE);
     }
 
-    private Map<String, String> section(String section, RedisServerContext ctx) {
+    private Map<String, String> section(String section, DefaultRedisServerContext ctx) {
         switch (section.toLowerCase()) {
             case SECTION_SERVER:
                 return server(ctx);
@@ -212,7 +209,7 @@ public class InfoCommand implements DBCommand {
         return null;
     }
 
-    private Map<String, String> server(RedisServerContext ctx) {
+    private Map<String, String> server(DefaultRedisServerContext ctx) {
         return map(entry("redis_version", "2.8.24"),
                 entry("tcp_port", valueOf(ctx.getServer().getPort())),
                 entry("os", fullOsName()),
@@ -227,48 +224,48 @@ public class InfoCommand implements DBCommand {
         return System.getProperty("os.name") + " " + System.getProperty("os.version") + " " + System.getProperty("os.arch");
     }
 
-    private Map<String, String> replication(RedisServerContext ctx) {
+    private Map<String, String> replication(DefaultRedisServerContext ctx) {
         // TODO:
         return map();
 //    return map(entry("role", getServerState(ctx).isMaster() ? "master" : "slave"),
 //        entry("connected_slaves", slaves(ctx)));
     }
 
-    private String slaves(RedisServerContext ctx) {
+    private String slaves(DefaultRedisServerContext ctx) {
         // TODO:
         return null;
-//    return valueOf(getAdminDict(ctx).getSet(safeString("slaves")).size());
+//    return valueOf(getAdminDict(ctx).getSet(String("slaves")).size());
     }
 
-    private Map<String, String> clients(RedisServerContext ctx) {
+    private Map<String, String> clients(DefaultRedisServerContext ctx) {
         return map(entry("connected_clients", valueOf(ctx.getClients())));
     }
 
-    private Map<String, String> memory(RedisServerContext ctx) {
+    private Map<String, String> memory(DefaultRedisServerContext ctx) {
         return map(entry("used_memory", valueOf(Runtime.getRuntime().totalMemory())));
     }
 
-    private Map<String, String> persistence(RedisServerContext ctx) {
+    private Map<String, String> persistence(DefaultRedisServerContext ctx) {
         // TODO:
         return map();
     }
 
-    private Map<String, String> stats(RedisServerContext ctx) {
+    private Map<String, String> stats(DefaultRedisServerContext ctx) {
         // TODO:
         return map();
     }
 
-    private Map<String, String> cpu(RedisServerContext ctx) {
+    private Map<String, String> cpu(DefaultRedisServerContext ctx) {
         // TODO:
         return map();
     }
 
-    private Map<String, String> commandstats(RedisServerContext ctx) {
+    private Map<String, String> commandstats(DefaultRedisServerContext ctx) {
         // TODO:
         return map();
     }
 
-    private Map<String, String> keyspace(RedisServerContext ctx) {
+    private Map<String, String> keyspace(DefaultRedisServerContext ctx) {
         // TODO:
         return map();
     }

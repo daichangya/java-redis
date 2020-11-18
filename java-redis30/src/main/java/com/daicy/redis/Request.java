@@ -5,10 +5,6 @@
 package com.daicy.redis;
 
 
-import io.netty.handler.codec.redis.ArrayRedisMessage;
-import com.daicy.redis.protocal.Reply;
-import io.netty.handler.codec.redis.RedisMessage;
-
 import java.util.List;
 
 
@@ -20,10 +16,6 @@ import java.util.List;
 public interface Request {
     String getCommand();
 
-    ArrayRedisMessage getParams();
-
-    RedisMessage getParam(int i);
-
     List<String> getParamsStrList();
 
     String getParamStr(int i);
@@ -31,6 +23,8 @@ public interface Request {
     int getLength();
 
     RedisClientSession getClientSession();
+
+    DefaultRedisServerContext getServerContext();
 
     boolean isEmpty();
 

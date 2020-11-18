@@ -7,21 +7,28 @@ package com.daicy.redis.storage;
 import static java.util.Objects.requireNonNull;
 
 public enum DataType {
-  LONG("long"),
-  STRING("string"),
-  LIST("list"),
-  SET("set"),
-  ZSET("zset"),
-  HASH("hash"),
-  NONE("none");
+  STRING("string",0),
+  LIST("list",1),
+  SET("set",2),
+  ZSET("zset",3),
+  HASH("hash",4),
+  LONG("long",5),
+  NONE("none",6);
 
   private final String text;
 
-  DataType(String text) {
+  private final int value;
+
+  DataType(String text,int value) {
     this.text = requireNonNull(text);
+    this.value = value;
   }
 
   public String text() {
     return text;
+  }
+
+  public int getValue(){
+    return value;
   }
 }

@@ -11,8 +11,11 @@ public class RedisServer {
     private static Integer port = 6380;
 
     public static void main(String[] args) throws Exception {
-        Server redisServer = ServerBuilder.forPort(port).channelInitializer(new RedisServerInitializer()).build();
-        RedisServerContext.getInstance().setServer(redisServer);
+        DefaultRedisServerContext redisServerContext = new DefaultRedisServerContext(DBConfig.builder().withPersistence().build());
+        Server redisServer = ServerBuilder.forPort(port).setServerContext(redisServerContext)
+                .channelInitializer(new RedisServerInitializer(redisServerContext)).build();
+        Runtime.getRuntime().addShutdownHook(new Thread(redisServer::shutdown));
+        redisServer.init();
         redisServer.start()
                 .thenAccept(ws -> {
                     System.out.println(

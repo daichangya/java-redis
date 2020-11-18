@@ -11,14 +11,12 @@ import com.daicy.redis.annotation.Command;
 import com.daicy.redis.annotation.ParamLength;
 import com.daicy.redis.annotation.ReadOnly;
 import com.daicy.redis.command.DBCommand;
-import com.daicy.redis.protocal.BulkReply;
-import com.daicy.redis.protocal.MultiBulkReply;
+import com.daicy.redis.protocal.BulkRedisMessage;
+import com.daicy.redis.protocal.MultiBulkRedisMessage;
+import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.storage.DictKey;
 import com.daicy.redis.storage.RedisDb;
 import com.daicy.redis.utils.DictUtils;
-import io.netty.handler.codec.redis.ArrayRedisMessage;
-import com.daicy.redis.protocal.Reply;
-import io.netty.handler.codec.redis.SimpleStringRedisMessage;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,15 +27,15 @@ import java.util.stream.Collectors;
 public class KeysCommand implements DBCommand {
 
     @Override
-    public Reply execute(RedisDb db, Request request) {
+    public RedisMessage execute(RedisDb db, Request request) {
         GlobPattern pattern = createPattern(request.getParamStr(0));
-        List<Reply> keys = db.getDict().keySet().stream()
+        List<RedisMessage> keys = db.getDict().keySet().stream()
                 .filter(dictKey -> pattern.match(dictKey.getValue()))
                 .filter(dictKey -> filterExpired(db, dictKey))
                 .map(dictKey -> dictKey.getValue())
-                .map(dictKey -> new BulkReply(dictKey))
+                .map(dictKey -> new BulkRedisMessage(dictKey))
                 .collect(Collectors.toList());
-        return new MultiBulkReply(keys);
+        return new MultiBulkRedisMessage(keys);
     }
 
     private GlobPattern createPattern(String param) {

@@ -17,6 +17,8 @@
         <module>remoting-netty4</module>
         <module>redis-storage</module>
         <module>rediso-original</module>
+        <module>redis-persistence</module>
+        <module>redis-context</module>
     </modules>
 
     <properties>

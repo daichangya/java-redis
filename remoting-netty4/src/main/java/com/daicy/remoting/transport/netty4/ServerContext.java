@@ -11,6 +11,12 @@ import java.util.Collection;
 
 public interface ServerContext<T> {
 
+    void init();
+
+    void start();
+
+    void stop();
+
     int getClientSize();
 
     Collection<T> getClients();

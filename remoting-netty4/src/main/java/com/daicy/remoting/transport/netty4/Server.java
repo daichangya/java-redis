@@ -72,5 +72,6 @@ public interface Server {
 
     public SocketAddress getLocalAddress();
 
+    void init();
 
 }
