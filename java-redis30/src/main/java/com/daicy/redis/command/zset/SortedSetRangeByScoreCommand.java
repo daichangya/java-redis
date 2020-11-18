@@ -85,8 +85,8 @@ public class SortedSetRangeByScoreCommand implements DBCommand {
             String param = request.getParamStr(i);
             if (param.equalsIgnoreCase(PARAM_LIMIT)) {
                 options.withLimit = true;
-                options.offset = parseInt(request.getParamStr(++i).toString());
-                options.count = parseInt(request.getParamStr(++i).toString());
+                options.offset = parseInt(request.getParamStr(++i));
+                options.count = parseInt(request.getParamStr(++i));
             } else if (param.equalsIgnoreCase(PARAM_WITHSCORES)) {
                 options.withScores = true;
             }
@@ -95,7 +95,7 @@ public class SortedSetRangeByScoreCommand implements DBCommand {
     }
 
     private boolean inclusive(String param) {
-        return !param.toString().startsWith(EXCLUSIVE);
+        return !param.startsWith(EXCLUSIVE);
     }
 
     private float parseRange(String param) {
