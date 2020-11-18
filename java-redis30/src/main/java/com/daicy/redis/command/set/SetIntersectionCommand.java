@@ -33,11 +33,9 @@ public class SetIntersectionCommand implements DBCommand {
 
     @Override
     public RedisMessage execute(RedisDb db, Request request) {
-        DictKey dictKey = DictKey.safeKey(request.getParamStr(0));
         List<String> paramsStrList = request.getParamsStrList();
         List<String> removeKeys = paramsStrList.subList(1, paramsStrList.size());
-        Set<String> stringSet = db.getDict().getOrDefault(
-                dictKey, DictValue.EMPTY_SET).getSet();
+        Set<String> stringSet = db.getDict().getSet(request.getParamStr(0));
         if (CollectionUtils.isEmpty(stringSet)) {
             return NULL;
         }

@@ -40,9 +40,7 @@ public class SortedSetRangeCommand implements DBCommand {
     public RedisMessage execute(RedisDb redisDb, Request request) {
         try {
             Dict db = redisDb.getDict();
-
-            DictValue value = db.getOrDefault(safeKey(request.getParamStr(0)), DictValue.EMPTY_ZSET);
-            NavigableSet<Entry<Double, String>> set = value.getSortedSet();
+            NavigableSet<Entry<Double, String>> set = db.getSortedSet(request.getParamStr(0));
 
             int from = Integer.parseInt(request.getParamStr(1));
             if (from < 0) {

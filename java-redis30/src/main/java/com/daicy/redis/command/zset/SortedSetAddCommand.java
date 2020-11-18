@@ -34,7 +34,7 @@ public class SortedSetAddCommand implements DBCommand {
     public RedisMessage execute(RedisDb redisDb, Request request) {
         try {
             Dict db = redisDb.getDict();
-            DictValue initial = db.getOrDefault(safeKey(request.getParamStr(0)), DictValue.EMPTY_ZSET);
+            SortedSet initial = db.getSortedSet(request.getParamStr(0));
             DictValue result = db.merge(safeKey(request.getParamStr(0)), parseInput(request),
                     (oldValue, newValue) -> {
                         Set<Map.Entry<Double, String>> merge = new SortedSet();
@@ -42,7 +42,7 @@ public class SortedSetAddCommand implements DBCommand {
                         merge.addAll(newValue.getSortedSet());
                         return zset(merge);
                     });
-            return new IntegerRedisMessage(changed(initial.getSortedSet(), result.getSortedSet()));
+            return new IntegerRedisMessage(changed(initial, result.getSortedSet()));
         } catch (NumberFormatException e) {
             return new ErrorRedisMessage("ERR value is not a valid float");
         }

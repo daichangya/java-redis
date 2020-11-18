@@ -9,7 +9,11 @@ import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
+
+import static com.daicy.redis.storage.DictKey.safeKey;
 
 
 public interface Dict {
@@ -30,42 +34,37 @@ public interface Dict {
 
     ImmutableSet<DictKey> keySet();
 
-    //  Sequence<DictValue> values();
-//
     List<Pair<DictKey, DictValue>> entryList();
-//
-//  default String getString(String key) {
-//    return getOrDefault(safeKey(key), DictValue.EMPTY_STRING).getString();
-//  }
-//
-//  default ImmutableList<String> getList(String key) {
-//    return getOrDefault(safeKey(key), DictValue.EMPTY_LIST).getList();
-//  }
-//
-//  default ImmutableSet<String> getSet(String key) {
-//    return getOrDefault(safeKey(key), DictValue.EMPTY_SET).getSet();
-//  }
-//
-//  default NavigableSet<Entry<Double, String>> getSortedSet(String key) {
-//    return getOrDefault(safeKey(key), DictValue.EMPTY_ZSET).getSortedSet();
-//  }
-//
-//  default ImmutableMap<String, String> getHash(String key) {
-//    return getOrDefault(safeKey(key), DictValue.EMPTY_HASH).getHash();
-//  }
 
-    //  default void putAll(ImmutableMap<? extends DictKey, ? extends DictValue> map) {
-//    map.forEach(this::put);
-//  }
-//
-  default DictValue putIfAbsent(DictKey key, DictValue value) {
-    DictValue oldValue = get(key);
-    if (oldValue == null) {
-        oldValue = put(key, value);
+    default String getString(String key) {
+        return getOrDefault(safeKey(key), DictValue.EMPTY_STRING).getString();
     }
-    return oldValue;
-  }
-//
+
+    default List<String> getList(String key) {
+        return getOrDefault(safeKey(key), DictValue.EMPTY_LIST).getList();
+    }
+
+    default Set<String> getSet(String key) {
+        return getOrDefault(safeKey(key), DictValue.EMPTY_SET).getSet();
+    }
+
+    default SortedSet getSortedSet(String key) {
+        return getOrDefault(safeKey(key), DictValue.EMPTY_ZSET).getSortedSet();
+    }
+
+    default Map<String, String> getHash(String key) {
+        return getOrDefault(safeKey(key), DictValue.EMPTY_HASH).getHash();
+    }
+
+    default DictValue putIfAbsent(DictKey key, DictValue value) {
+        DictValue oldValue = get(key);
+        if (oldValue == null) {
+            oldValue = put(key, value);
+        }
+        return oldValue;
+    }
+
+    //
     default DictValue merge(DictKey key, DictValue value,
                             BiFunction<DictValue, DictValue, DictValue> remappingFunction) {
         DictValue oldValue = get(key);
@@ -84,12 +83,6 @@ public interface Dict {
         return (value != null || containsKey(key)) ? value : defaultValue;
     }
 
-    //
-//  default boolean isType(DictKey key, DataType type) {
-//    DictValue value = get(key);
-//    return value != null ? value.getType() == type : true;
-//  }
-//
     default boolean rename(DictKey from, DictKey to) {
         DictValue value = remove(from);
         if (value != null) {
@@ -98,15 +91,4 @@ public interface Dict {
         }
         return false;
     }
-//
-//  default void overrideAll(ImmutableMap<DictKey, DictValue> value) {
-//    clear();
-//    putAll(value);
-//  }
-
-//  default ImmutableSet<DictKey> evictableKeys(Instant now) {
-//    return entrySet()
-//        .filter(entry -> entry.get2().isExpired(now))
-//        .map(Tuple2::get1);
-//  }
 }

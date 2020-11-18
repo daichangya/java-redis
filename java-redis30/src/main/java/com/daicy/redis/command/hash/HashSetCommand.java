@@ -2,7 +2,8 @@
  * Copyright (c) 2015-2020, Antonio Gabriel Muñoz Conejo <antoniogmc at gmail dot com>
  * Distributed under the terms of the MIT License
  */
-package com.daicy.redis.command.set;
+package com.daicy.redis.command.hash;
+
 
 import com.daicy.redis.Request;
 import com.daicy.redis.annotation.Command;
@@ -15,29 +16,32 @@ import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.DictKey;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import static com.daicy.redis.storage.DictKey.safeKey;
+import static com.daicy.redis.storage.DictValue.hash;
 
-@Command("sadd")
-@ParamLength(2)
-@ParamType(DataType.SET)
-public class SetAddCommand implements DBCommand {
+@Command("hset")
+@ParamLength(3)
+@ParamType(DataType.HASH)
+public class HashSetCommand implements DBCommand {
 
     @Override
     public RedisMessage execute(RedisDb db, Request request) {
+
+        DictValue dictValue = hash(Pair.of(request.getParamStr(1), request.getParamStr(2)));
         List<String> paramsStrList = request.getParamsStrList();
-        DictValue dictValue = DictValue.set(paramsStrList.subList(1, paramsStrList.size()));
         DictKey dictKey = safeKey(paramsStrList.get(0));
-        DictValue oldValue = db.getDict().putIfAbsent(dictKey,dictValue);
-        if(null == oldValue){
-            return new IntegerRedisMessage(dictValue.getSet().size());
+        DictValue oldValue = db.getDict().putIfAbsent(dictKey, dictValue);
+        if (null == oldValue) {
+            return new IntegerRedisMessage(1);
         }
-        Set<String> oldValueSet = oldValue.getSet();
-        int oldSize = oldValueSet.size();
-        oldValueSet.addAll(dictValue.getSet());
-        return new IntegerRedisMessage(oldValueSet.size() - oldSize);
+        Map<String, String> oldHash = oldValue.getHash();
+        boolean isExists = null == oldHash.get(request.getParamStr(1));
+        oldHash.putAll(dictValue.getHash());
+        return new IntegerRedisMessage(isExists ? 1 : 0);
     }
 }

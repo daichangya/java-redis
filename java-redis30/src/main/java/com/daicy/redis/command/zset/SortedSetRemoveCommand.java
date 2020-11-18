@@ -32,11 +32,9 @@ public class SortedSetRemoveCommand implements DBCommand {
 
     @Override
     public RedisMessage execute(RedisDb db, Request request) {
-        DictKey dictKey = DictKey.safeKey(request.getParamStr(0));
         List<String> paramsStrList = request.getParamsStrList();
         List<String> removeStrs = paramsStrList.subList(1, paramsStrList.size());
-        Set<Entry<Double, String>> stringSet = db.getDict().getOrDefault(
-                dictKey, DictValue.EMPTY_ZSET).getSortedSet();
+        Set<Entry<Double, String>> stringSet = db.getDict().getSortedSet(request.getParamStr(0));
         if (CollectionUtils.isEmpty(stringSet)) {
             return ZERO;
         }

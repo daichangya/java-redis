@@ -15,7 +15,6 @@ import com.daicy.redis.protocal.ErrorRedisMessage;
 import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.Dict;
-import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
 import com.daicy.redis.utils.RedisMessageUtils;
 
@@ -24,7 +23,6 @@ import java.util.Map.Entry;
 import java.util.NavigableSet;
 import java.util.stream.Stream;
 
-import static com.daicy.redis.storage.DictKey.safeKey;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.reverse;
 import static java.util.stream.Collectors.toList;
@@ -41,8 +39,7 @@ public class SortedSetReverseRangeCommand implements DBCommand {
     public RedisMessage execute(RedisDb redisDb, Request request) {
         try {
             Dict db = redisDb.getDict();
-            DictValue value = db.getOrDefault(safeKey(request.getParamStr(0)), DictValue.EMPTY_ZSET);
-            NavigableSet<Entry<Double, String>> set = value.getSortedSet();
+            NavigableSet<Entry<Double, String>> set = db.getSortedSet(request.getParamStr(0));
 
             int from = Integer.parseInt(request.getParamStr(2));
             if (from < 0) {

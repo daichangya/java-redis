@@ -13,10 +13,7 @@ import com.daicy.redis.annotation.ReadOnly;
 import com.daicy.redis.command.DBCommand;
 import com.daicy.redis.protocal.ErrorRedisMessage;
 import com.daicy.redis.protocal.RedisMessage;
-import com.daicy.redis.storage.DataType;
-import com.daicy.redis.storage.Dict;
-import com.daicy.redis.storage.DictValue;
-import com.daicy.redis.storage.RedisDb;
+import com.daicy.redis.storage.*;
 import com.daicy.redis.utils.RedisMessageUtils;
 import com.google.common.collect.Lists;
 
@@ -47,8 +44,7 @@ public class SortedSetRangeByScoreCommand implements DBCommand {
     public RedisMessage execute(RedisDb redisDb, Request request) {
         try {
             Dict db = redisDb.getDict();
-            DictValue value = db.getOrDefault(safeKey(request.getParamStr(0)), DictValue.EMPTY_ZSET);
-            NavigableSet<Entry<Double, String>> set = value.getSortedSet();
+            NavigableSet<Entry<Double, String>> set = db.getSortedSet(request.getParamStr(0));
 
             float from = parseRange(request.getParamStr(1));
             float to = parseRange(request.getParamStr(2));
