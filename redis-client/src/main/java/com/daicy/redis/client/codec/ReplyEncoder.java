@@ -13,18 +13,16 @@
  * the License.
  */
 
-package com.daicy.redis.codec;
+package com.daicy.redis.client.codec;
 
+import com.daicy.redis.client.utils.ByteBufUtils;
 import com.daicy.redis.protocal.*;
-import com.daicy.redis.protocal.ErrorRedisMessage;
-import com.daicy.redis.protocal.IntegerRedisMessage;
-import com.daicy.redis.protocal.RedisMessage;
-import com.daicy.redis.utils.ByteBufUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.CodecException;
 import io.netty.handler.codec.MessageToMessageEncoder;
-import io.netty.handler.codec.redis.*;
-import io.netty.util.internal.ObjectUtil;
+import io.netty.handler.codec.redis.ArrayRedisMessage;
+import io.netty.handler.codec.redis.FullBulkStringRedisMessage;
+import io.netty.handler.codec.redis.SimpleStringRedisMessage;
 import io.netty.util.internal.UnstableApi;
 
 import java.util.List;

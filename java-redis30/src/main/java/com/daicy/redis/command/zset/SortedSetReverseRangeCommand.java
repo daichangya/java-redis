@@ -16,7 +16,7 @@ import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.Dict;
 import com.daicy.redis.storage.RedisDb;
-import com.daicy.redis.utils.RedisMessageUtils;
+import com.daicy.redis.client.utils.RedisMessageUtils;
 
 import java.util.List;
 import java.util.Map.Entry;

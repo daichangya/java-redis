@@ -1,6 +1,6 @@
 package com.daicy.redis;
 
-import com.daicy.redis.utils.RedisMessageUtils;
+import com.daicy.redis.client.utils.RedisMessageUtils;
 import com.google.common.collect.Lists;
 import org.junit.Test;
 

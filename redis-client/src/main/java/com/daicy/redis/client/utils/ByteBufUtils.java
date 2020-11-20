@@ -1,6 +1,6 @@
-package com.daicy.redis.utils;
+package com.daicy.redis.client.utils;
 
-import com.daicy.redis.codec.StringCodec;
+import com.daicy.redis.client.codec.StringCodec;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 

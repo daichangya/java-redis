@@ -1,6 +1,6 @@
 package com.daicy.redis;
 
-import com.daicy.redis.utils.RedisMessageUtils;
+import com.daicy.redis.client.utils.RedisMessageUtils;
 import com.daicy.remoting.transport.netty4.ClientSession;
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -25,7 +25,7 @@ public class Replication {
             selectBytes = String.format("*2\r\n$6\r\nselect\r\n$%s\r\n%s\r\n"
                     , String.valueOf(db).length(), db).getBytes();
         }
-        byte[] buffer = RedisMessageUtils.toMultiBulkRedisMessage(request).encode();
+        byte[] buffer = DefaultRequest.toMultiBulkRedisMessage(request).encode();
         for (ClientSession clientSession : slaves) {
             RedisClientSession redisClientSession = (RedisClientSession) clientSession;
             if (selectBytes.length > 0) {

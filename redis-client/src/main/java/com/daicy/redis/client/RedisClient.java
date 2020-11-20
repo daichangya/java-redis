@@ -2,14 +2,17 @@
  * Copyright (c) 2015-2020, Antonio Gabriel Muñoz Conejo <antoniogmc at gmail dot com>
  * Distributed under the terms of the MIT License
  */
-package com.daicy.redis;
+package com.daicy.redis.client;
 
-import com.daicy.redis.handler.RedisClientInitializer;
+import com.daicy.redis.client.handler.RedisClientInitializer;
 import com.daicy.redis.protocal.MultiBulkRedisMessage;
 import com.daicy.redis.protocal.RedisMessage;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.*;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;

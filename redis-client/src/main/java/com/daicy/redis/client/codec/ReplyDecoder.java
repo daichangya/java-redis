@@ -13,11 +13,12 @@
  * the License.
  */
 
-package com.daicy.redis.codec;
+package com.daicy.redis.client.codec;
 
-import com.daicy.redis.protocal.*;
-import com.daicy.redis.utils.RedisMessageUtils;
-import com.google.common.collect.Lists;
+import com.daicy.redis.client.utils.RedisMessageUtils;
+import com.daicy.redis.protocal.ErrorRedisMessage;
+import com.daicy.redis.protocal.IntegerRedisMessage;
+import com.daicy.redis.protocal.RedisMessage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.CodecException;
 import io.netty.handler.codec.MessageToMessageDecoder;

@@ -17,7 +17,7 @@ import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.Dict;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
-import com.daicy.redis.utils.RedisMessageUtils;
+import com.daicy.redis.client.utils.RedisMessageUtils;
 import com.google.common.collect.Lists;
 
 import java.util.List;

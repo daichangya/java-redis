@@ -1,13 +1,8 @@
-package com.daicy.redis.utils;
+package com.daicy.redis.client.utils;
 
-import com.daicy.redis.DefaultRequest;
-import com.daicy.redis.RedisClientSession;
-import com.daicy.redis.DefaultRedisServerContext;
-import com.daicy.redis.Request;
-import com.daicy.redis.codec.StringCodec;
+import com.daicy.redis.client.codec.StringCodec;
 import com.daicy.redis.protocal.BulkRedisMessage;
 import com.daicy.redis.protocal.MultiBulkRedisMessage;
-import com.google.common.collect.Lists;
 import io.netty.handler.codec.redis.AbstractStringRedisMessage;
 import io.netty.handler.codec.redis.ArrayRedisMessage;
 import io.netty.handler.codec.redis.BulkStringRedisContent;
@@ -17,8 +12,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * @author: create by daichangya
@@ -54,27 +47,6 @@ public class RedisMessageUtils {
                         .map(paramStr -> new BulkRedisMessage(paramStr))
                         .collect(Collectors.toList());
         return new MultiBulkRedisMessage(messageList);
-    }
-
-    public static Request toRequest(MultiBulkRedisMessage multiBulkRedisMessage, DefaultRedisServerContext redisServerContext) {
-        if (null == multiBulkRedisMessage || CollectionUtils.isEmpty(multiBulkRedisMessage.data())) {
-            return null;
-        }
-        List<String> params = multiBulkRedisMessage.data().stream()
-                .map(redisMessage -> ((BulkRedisMessage)redisMessage).data()).collect(Collectors.toList());
-        RedisClientSession clientSession = new RedisClientSession("dummy", null);
-        return new DefaultRequest(params.get(0),params.subList(1,params.size()),clientSession,redisServerContext);
-    }
-
-
-    public static MultiBulkRedisMessage toMultiBulkRedisMessage(Request request) {
-        BulkRedisMessage bulkReply = new BulkRedisMessage(request.getCommand());
-        List<com.daicy.redis.protocal.RedisMessage> bulkReplyList = Lists.newArrayList(bulkReply);
-        if (CollectionUtils.isNotEmpty(request.getParamsStrList())) {
-            bulkReplyList.addAll(request.getParamsStrList().stream()
-                    .map(param -> new BulkRedisMessage(param)).collect(toList()));
-        }
-        return new MultiBulkRedisMessage(bulkReplyList);
     }
 
 

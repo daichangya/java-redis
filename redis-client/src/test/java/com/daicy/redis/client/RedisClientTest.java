@@ -1,4 +1,4 @@
-package com.daicy.redis;
+package com.daicy.redis.client;
 
 import com.daicy.redis.protocal.RedisMessage;
 import io.netty.channel.ChannelFuture;

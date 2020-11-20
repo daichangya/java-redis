@@ -4,15 +4,21 @@
  */
 package com.daicy.redis;
 
-import com.daicy.redis.utils.ByteBufUtils;
-import com.daicy.redis.utils.RedisMessageUtils;
+import com.daicy.redis.client.utils.ByteBufUtils;
+import com.daicy.redis.client.utils.RedisMessageUtils;
+import com.daicy.redis.protocal.BulkRedisMessage;
+import com.daicy.redis.protocal.MultiBulkRedisMessage;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import io.netty.handler.codec.redis.ArrayRedisMessage;
 import io.netty.handler.codec.redis.FullBulkStringRedisMessage;
 import io.netty.handler.codec.redis.RedisMessage;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 
 public class DefaultRequest implements Request {
@@ -93,4 +99,16 @@ public class DefaultRequest implements Request {
     public String toString() {
         return command + "[" + paramsStrList.size() + "]: " + paramsStrList;
     }
+
+
+    public static MultiBulkRedisMessage toMultiBulkRedisMessage(Request request) {
+        BulkRedisMessage bulkReply = new BulkRedisMessage(request.getCommand());
+        List<com.daicy.redis.protocal.RedisMessage> bulkReplyList = Lists.newArrayList(bulkReply);
+        if (CollectionUtils.isNotEmpty(request.getParamsStrList())) {
+            bulkReplyList.addAll(request.getParamsStrList().stream()
+                    .map(param -> new BulkRedisMessage(param)).collect(toList()));
+        }
+        return new MultiBulkRedisMessage(bulkReplyList);
+    }
+
 }

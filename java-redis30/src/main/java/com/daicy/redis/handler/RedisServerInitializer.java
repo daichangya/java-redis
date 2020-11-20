@@ -16,7 +16,7 @@
 package com.daicy.redis.handler;
 
 import com.daicy.redis.DefaultRedisServerContext;
-import com.daicy.redis.codec.ReplyEncoder;
+import com.daicy.redis.client.codec.ReplyEncoder;
 import com.daicy.remoting.transport.netty4.ServerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;

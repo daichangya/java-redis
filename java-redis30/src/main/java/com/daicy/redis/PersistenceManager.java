@@ -7,15 +7,12 @@ package com.daicy.redis;
 import com.daicy.redis.command.RedisCommand;
 import com.daicy.redis.persistence.RDBInputStream;
 import com.daicy.redis.persistence.RDBOutputStream;
-import com.daicy.redis.protocal.MultiBulkRedisMessage;
-import com.daicy.redis.protocal.RedisMessage;
-import com.daicy.redis.protocal.RedisMessageType;
-import com.daicy.redis.protocal.RedisParser;
+import com.daicy.redis.protocal.*;
 import com.daicy.redis.protocal.io.RedisSourceInputStream;
 import com.daicy.redis.storage.RedisDb;
-import com.daicy.redis.utils.RedisMessageUtils;
 import com.daicy.remoting.transport.netty4.ClientSession;
 import io.netty.channel.DefaultFileRegion;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.daicy.redis.RedisConstants.REDIS_REPL_ONLINE;
 import static com.daicy.redis.RedisConstants.REDIS_REPL_SEND_BULK;
@@ -125,9 +123,19 @@ public class PersistenceManager {
     }
 
     private void processCommand(RedisMessage redisMessage) {
-        Request request = RedisMessageUtils.toRequest((MultiBulkRedisMessage) redisMessage, redisServerContext);
+        Request request = toRequest((MultiBulkRedisMessage) redisMessage, redisServerContext);
         RedisCommand redisCommand = redisServerContext.getRedisCommand(request.getCommand());
         RedisMessage reply = redisCommand.execute(request);
+    }
+
+    public Request toRequest(MultiBulkRedisMessage multiBulkRedisMessage, DefaultRedisServerContext redisServerContext) {
+        if (null == multiBulkRedisMessage || CollectionUtils.isEmpty(multiBulkRedisMessage.data())) {
+            return null;
+        }
+        List<String> params = multiBulkRedisMessage.data().stream()
+                .map(redisMessage -> ((BulkRedisMessage) redisMessage).data()).collect(Collectors.toList());
+        RedisClientSession clientSession = new RedisClientSession("dummy", null);
+        return new DefaultRequest(params.get(0), params.subList(1, params.size()), clientSession, redisServerContext);
     }
 
     private void createRedo() {
@@ -214,7 +222,7 @@ public class PersistenceManager {
             output.write(String.format("*2\r\n$6\r\nselect\r\n$%s\r\n%s\r\n"
                     , String.valueOf(db).length(), db).getBytes());
 
-            byte[] buffer = RedisMessageUtils.toMultiBulkRedisMessage(request).encode();
+            byte[] buffer = DefaultRequest.toMultiBulkRedisMessage(request).encode();
             output.write(buffer);
             output.flush();
             LOGGER.debug("new command: " + request.getCommand());

@@ -13,11 +13,11 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package com.daicy.redis.handler;
+package com.daicy.redis.client.handler;
 
-import com.daicy.redis.RedisClient;
-import com.daicy.redis.codec.ReplyDecoder;
-import com.daicy.redis.codec.ReplyEncoder;
+import com.daicy.redis.client.RedisClient;
+import com.daicy.redis.client.codec.ReplyDecoder;
+import com.daicy.redis.client.codec.ReplyEncoder;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;

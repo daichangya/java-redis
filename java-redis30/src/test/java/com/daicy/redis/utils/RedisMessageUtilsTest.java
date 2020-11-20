@@ -20,7 +20,7 @@ public class RedisMessageUtilsTest {
     public void toMultiBulkRedisMessage() {
         Request request = new DefaultRequest("set",
                 Lists.newArrayList("daicy", "999"), null, null);
-        RedisMessage redisMessage = RedisMessageUtils.toMultiBulkRedisMessage(request);
+        RedisMessage redisMessage = DefaultRequest.toMultiBulkRedisMessage(request);
         System.out.println(new String(redisMessage.encode()));
     }
 }
