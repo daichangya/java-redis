@@ -37,6 +37,8 @@ public class RedisMessageConstants {
 
     public static final BulkRedisMessage NULL = new BulkRedisMessage(null);
 
+    public static final ErrorRedisMessage ERR = new ErrorRedisMessage("ERR");
+
     public static final ErrorRedisMessage NO_KEY = new ErrorRedisMessage("ERR no such key");
 
 

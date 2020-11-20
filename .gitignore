@@ -39,3 +39,6 @@ Thumbs.db
 # *.tar.gz
 /build/
 /bin
+
+*.aof
+*.rdbIng

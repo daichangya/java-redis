@@ -16,4 +16,9 @@ public interface RedisMessage<T> {
 
     RedisMessageType getType();
 
+
+    static RedisMessage string(String str) {
+        return new BulkRedisMessage(str);
+    }
+
 }

@@ -42,6 +42,13 @@ public abstract class AbstractServerContext implements ServerContext<ClientSessi
         return clients.putIfAbsent(client.getId(), client);
     }
 
+
+    @Override
+    public boolean delClient(ClientSession client) {
+        return clients.remove(sourceKey(client.channel),client);
+    }
+
+
     @Override
     public ClientSession getClient(Channel channel) {
         return clients.computeIfAbsent(sourceKey(channel), key -> newSession(channel));

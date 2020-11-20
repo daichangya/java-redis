@@ -13,7 +13,7 @@
  * the License.
  */
 
-package com.daicy.redis.handler;
+package com.daicy.redis.codec;
 
 import com.daicy.redis.protocal.*;
 import com.daicy.redis.protocal.ErrorRedisMessage;
@@ -36,24 +36,6 @@ import java.util.stream.Collectors;
  */
 @UnstableApi
 public class ReplyEncoder extends MessageToMessageEncoder<RedisMessage> {
-
-    private final RedisMessagePool messagePool;
-
-    /**
-     * Creates a new instance with default {@code messagePool}.
-     */
-    public ReplyEncoder() {
-        this(FixedRedisMessagePool.INSTANCE);
-    }
-
-    /**
-     * Creates a new instance.
-     *
-     * @param messagePool the predefined message pool.
-     */
-    public ReplyEncoder(RedisMessagePool messagePool) {
-        this.messagePool = ObjectUtil.checkNotNull(messagePool, "messagePool");
-    }
 
     @Override
     protected void encode(ChannelHandlerContext ctx, RedisMessage reply, List<Object> out) throws Exception {

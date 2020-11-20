@@ -3,17 +3,19 @@ package com.daicy.redis;
 import com.daicy.redis.command.DBCommandSuite;
 import com.daicy.redis.command.RedisCommand;
 import com.daicy.redis.context.RedisServerContext;
-import com.daicy.redis.persistence.RDBOutputStream;
 import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.storage.DictFactory;
 import com.daicy.redis.storage.RedisDb;
 import com.daicy.remoting.transport.netty4.AbstractServerContext;
+import com.daicy.remoting.transport.netty4.ClientSession;
 import io.netty.channel.Channel;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * @author: create by daichangya
@@ -23,6 +25,16 @@ import java.util.List;
  */
 public class DefaultRedisServerContext extends AbstractServerContext implements RedisServerContext {
 
+    private final ConcurrentSkipListSet<ClientSession> slaves = new ConcurrentSkipListSet<>();
+
+    private static DefaultRedisServerContext instance;
+
+    private RedisClientSession master;
+
+    private String masterhost;
+
+    private String masterport;
+
     private final DBCommandSuite commands = new DBCommandSuite();
 
     private final List<RedisDb> databases = new ArrayList<>();
@@ -31,8 +43,18 @@ public class DefaultRedisServerContext extends AbstractServerContext implements 
 
     private final DBConfig dbConfig;
 
+    private volatile boolean isRdbIng = false;
+
+    private volatile boolean isAofIng = false;
+
+
     public DefaultRedisServerContext(DBConfig dbConfig) {
         this.dbConfig = dbConfig;
+        instance = this;
+    }
+
+    public static DefaultRedisServerContext getInstance(){
+        return instance;
     }
 
     @Override
@@ -100,6 +122,20 @@ public class DefaultRedisServerContext extends AbstractServerContext implements 
     private void propagate(Request request) {
         if (!isReadOnlyCommand(request.getCommand())) {
             persistenceManager.append(request);
+            Replication.replicationFeedSlaves(request);
+        }
+    }
+
+    public void exportRDBBg() {
+        if (null != persistenceManager) {
+            persistenceManager.exportRDBBg();
+        }
+    }
+
+
+    public void exportRDB() throws IOException {
+        if (null != persistenceManager) {
+            persistenceManager.exportRDB();
         }
     }
 
@@ -107,4 +143,47 @@ public class DefaultRedisServerContext extends AbstractServerContext implements 
         return commands.isReadOnly(command);
     }
 
+    public boolean isRdbIng() {
+        return isRdbIng;
+    }
+
+    public void setRdbIng(boolean rdbIng) {
+        isRdbIng = rdbIng;
+    }
+
+    public boolean isAofIng() {
+        return isAofIng;
+    }
+
+    public void setAofIng(boolean aofIng) {
+        isAofIng = aofIng;
+    }
+
+    public ConcurrentSkipListSet<ClientSession> getSlaves() {
+        return slaves;
+    }
+
+    public RedisClientSession getMaster() {
+        return master;
+    }
+
+    public void setMaster(RedisClientSession master) {
+        this.master = master;
+    }
+
+    public String getMasterhost() {
+        return masterhost;
+    }
+
+    public void setMasterhost(String masterhost) {
+        this.masterhost = masterhost;
+    }
+
+    public String getMasterport() {
+        return masterport;
+    }
+
+    public void setMasterport(String masterport) {
+        this.masterport = masterport;
+    }
 }

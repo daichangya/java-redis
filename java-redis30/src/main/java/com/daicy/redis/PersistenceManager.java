@@ -14,17 +14,21 @@ import com.daicy.redis.protocal.RedisParser;
 import com.daicy.redis.protocal.io.RedisSourceInputStream;
 import com.daicy.redis.storage.RedisDb;
 import com.daicy.redis.utils.RedisMessageUtils;
-import com.google.common.collect.ImmutableMap;
+import com.daicy.remoting.transport.netty4.ClientSession;
+import io.netty.channel.DefaultFileRegion;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static com.daicy.redis.RedisConstants.REDIS_REPL_ONLINE;
+import static com.daicy.redis.RedisConstants.REDIS_REPL_SEND_BULK;
+import static com.daicy.redis.RedisConstants.REDIS_REPL_WAIT_BGSAVE_END;
 import static java.util.Objects.requireNonNull;
 
 public class PersistenceManager {
@@ -39,6 +43,7 @@ public class PersistenceManager {
     private final DefaultRedisServerContext redisServerContext;
     private final String dumpFile;
     private final String redoFile;
+    private File tempAofFile;
     private final int syncPeriod;
 
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
@@ -67,7 +72,10 @@ public class PersistenceManager {
 
     void run() {
         exportRDB();
+        rdbToSlave();
         createRedo();
+        Request request = new DefaultRequest("PING", null, null, redisServerContext);
+        Replication.replicationFeedSlaves(request);
     }
 
 
@@ -88,6 +96,10 @@ public class PersistenceManager {
         if (output != null) {
             executor.submit(() -> appendRedo(request));
         }
+    }
+
+    public void exportRDBBg() {
+        executor.submit(() -> exportRDB());
     }
 
 
@@ -121,7 +133,9 @@ public class PersistenceManager {
     private void createRedo() {
         try {
             closeRedo();
-            output = new FileOutputStream(redoFile);
+            tempAofFile = new File(String.format("temp-%s.aof", Thread.currentThread().getId()));
+            tempAofFile.createNewFile();
+            output = new FileOutputStream(tempAofFile);
             LOGGER.info("AOF file created");
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -129,19 +143,25 @@ public class PersistenceManager {
     }
 
     private void closeRedo() {
-        try {
-            if (output != null) {
-                output.close();
-                output = null;
-                LOGGER.debug("AOF file closed");
-            }
-        } catch (IOException e) {
-            LOGGER.error("error closing AOF file", e);
+        IOUtils.closeQuietly(output);
+        if (null != tempAofFile) {
+            tempAofFile.renameTo(new File(redoFile));
         }
+        LOGGER.debug("AOF file closed");
     }
 
-    private void exportRDB() {
-        try (FileOutputStream fileOutputStream = new FileOutputStream(dumpFile)) {
+    public void exportRDB() {
+        if (redisServerContext.isRdbIng()) {
+            return;
+        }
+        redisServerContext.setRdbIng(true);
+        File tempFile;
+        FileOutputStream fileOutputStream = null;
+        String tempDumpFile = String.format("temp-%s.rdb", Thread.currentThread().getId());
+        try {
+            tempFile = new File(tempDumpFile);
+            tempFile.createNewFile();
+            fileOutputStream = new FileOutputStream(tempFile);
             RDBOutputStream rdb = new RDBOutputStream(fileOutputStream);
             rdb.preamble(RDB_VERSION);
             List<RedisDb> databases = redisServerContext.getDatabases();
@@ -153,9 +173,37 @@ public class PersistenceManager {
                 }
             }
             rdb.end();
+            tempFile.renameTo(new File(dumpFile));
+            redisServerContext.setRdbIng(false);
             LOGGER.info("RDB file exported");
         } catch (IOException e) {
             LOGGER.error("error writing to RDB file", e);
+        } finally {
+            IOUtils.closeQuietly(fileOutputStream);
+        }
+    }
+
+    private void rdbToSlave() {
+        RandomAccessFile raf = null;
+        try {
+            // 1. 通过 RandomAccessFile 打开一个文件.
+            raf = new RandomAccessFile(dumpFile, "r");
+            long length = raf.length();
+
+            for (ClientSession clientSession : redisServerContext.getSlaves()) {
+                RedisClientSession redisClientSession = (RedisClientSession) clientSession;
+                if (redisClientSession.getReplstate() == REDIS_REPL_WAIT_BGSAVE_END) {
+                    redisClientSession.setReplstate(REDIS_REPL_SEND_BULK);
+                    redisClientSession.getChannel().writeAndFlush(
+                            new DefaultFileRegion(raf.getChannel(), 0, length));
+                    redisClientSession.setReplstate(REDIS_REPL_ONLINE);
+                }
+
+            }
+        } catch (Exception ex) {
+            LOGGER.error("rdbtoslave error", ex);
+        } finally {
+            IOUtils.closeQuietly(raf);
         }
     }
 

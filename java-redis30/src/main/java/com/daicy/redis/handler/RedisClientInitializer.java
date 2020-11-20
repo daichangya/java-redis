@@ -15,9 +15,9 @@
  */
 package com.daicy.redis.handler;
 
-import com.daicy.redis.DefaultRedisServerContext;
+import com.daicy.redis.RedisClient;
+import com.daicy.redis.codec.ReplyDecoder;
 import com.daicy.redis.codec.ReplyEncoder;
-import com.daicy.remoting.transport.netty4.ServerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -25,25 +25,25 @@ import io.netty.handler.codec.redis.RedisArrayAggregator;
 import io.netty.handler.codec.redis.RedisBulkStringAggregator;
 import io.netty.handler.codec.redis.RedisDecoder;
 import io.netty.handler.codec.redis.RedisEncoder;
-import io.netty.util.concurrent.DefaultEventExecutorGroup;
 
-public class RedisServerInitializer extends ChannelInitializer<SocketChannel> {
-    private static final DefaultEventExecutorGroup group = new DefaultEventExecutorGroup(1);
+public class RedisClientInitializer extends ChannelInitializer<SocketChannel> {
 
-    private ServerContext serverContext;
+    private final RedisClient redisClient;
 
-    public RedisServerInitializer(ServerContext serverContext) {
-        this.serverContext = serverContext;
+    public RedisClientInitializer(RedisClient redisClient) {
+        this.redisClient = redisClient;
     }
 
     @Override
-    public void initChannel(SocketChannel ch) {
-        ChannelPipeline p = ch.pipeline();
+    protected void initChannel(SocketChannel channel) {
+        ChannelPipeline p = channel.pipeline();
         p.addLast(new RedisDecoder());
         p.addLast(new RedisBulkStringAggregator());
         p.addLast(new RedisArrayAggregator());
+        p.addLast(new ReplyDecoder());
         p.addLast(new RedisEncoder());
         p.addLast(new ReplyEncoder());
-        p.addLast(group, new RedisCommandHandler((DefaultRedisServerContext) serverContext));
+        p.addLast(new RedisClientHandler(redisClient));
     }
+
 }

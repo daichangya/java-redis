@@ -11,10 +11,21 @@ import io.netty.channel.Channel;
  */
 public class RedisClientSession extends ClientSession {
 
-    private int databaseNum = 0;
+    private volatile int databaseNum = 0;
+
+    // 复制状态
+    private volatile int replstate;          /* replication state if this is a slave */
+
+    public int getReplstate() {
+        return replstate;
+    }
+
+    public void setReplstate(int replstate) {
+        this.replstate = replstate;
+    }
 
     public RedisClientSession(String id, Channel channel) {
-        super(id,channel);
+        super(id, channel);
     }
 
     public int getDictNum() {

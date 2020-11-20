@@ -11,6 +11,7 @@ import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.DictKey;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
@@ -18,6 +19,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.zip.CheckedOutputStream;
 
 import static java.util.Objects.requireNonNull;
@@ -55,8 +57,10 @@ public class RDBOutputStream {
     }
 
     public void dabatase(RedisDb db) throws IOException {
-        for (Pair<DictKey, DictValue> entry : db.getDict().entryList()) {
-            value(entry.getKey(), entry.getValue(), db.getExpires().get(entry.getKey()));
+        ImmutableMap<DictKey, DictValue> dict = ImmutableMap.copyOf(db.getDict().entryList());
+        ImmutableMap<DictKey, DictValue> expires = ImmutableMap.copyOf(db.getExpires().entryList());
+        for (Entry<DictKey, DictValue> entry : dict.entrySet()) {
+            value(entry.getKey(), entry.getValue(), expires.get(entry.getKey()));
         }
     }
 

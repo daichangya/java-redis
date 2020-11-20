@@ -13,23 +13,18 @@ import io.netty.handler.codec.redis.SimpleStringRedisMessage;
  */
 public class RedisConstants {
 
-    public static final IntegerRedisMessage ZERO = new IntegerRedisMessage(0);
+//    #define REDIS_REPL_WAIT_BGSAVE_START 6 /* We need to produce a new RDB file. */
+//            #define REDIS_REPL_WAIT_BGSAVE_END 7 /* Waiting RDB file creation to finish. */
+//            #define REDIS_REPL_SEND_BULK 8 /* Sending RDB file to slave. */
+//            #define REDIS_REPL_ONLINE 9 /* RDB file transmitted, sending just updates. */
 
-    public static final IntegerRedisMessage ONE = new IntegerRedisMessage(1);
+    public static int REDIS_REPL_WAIT_BGSAVE_START = 6;
 
-    public static final SimpleStringRedisMessage OK =
-            FixedRedisMessagePool.INSTANCE.getSimpleString("OK");
+    public static int REDIS_REPL_WAIT_BGSAVE_END = 7;
 
-    public static final SimpleStringRedisMessage QUIT =
-            FixedRedisMessagePool.INSTANCE.getSimpleString("QUIT");
+    public static int REDIS_REPL_SEND_BULK = 8;
 
-    public static final ErrorRedisMessage NO_KEY =
-            FixedRedisMessagePool.INSTANCE.getError("ERR no such key");
+    public static int REDIS_REPL_ONLINE = 0;
 
 
-    public static final ErrorRedisMessage OUT_RANGE =
-            FixedRedisMessagePool.INSTANCE.getError("ERR index out of range");
-
-    public static final ErrorRedisMessage TYPE_ERROR =
-            FixedRedisMessagePool.INSTANCE.getError("WRONGTYPE Operation against a key holding the wrong kind of value");
 }
