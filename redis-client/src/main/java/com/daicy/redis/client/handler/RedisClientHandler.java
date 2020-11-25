@@ -31,6 +31,12 @@ public class RedisClientHandler extends ChannelDuplexHandler {
     }
 
     @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        clientCallback.onConnect();
+    }
+
+
+    @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         RedisCommand redisCommand =  ctx.channel().attr(CURRENT_REQUEST).get();
         redisCommand.getClientPromise().setSuccess(msg);

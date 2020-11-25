@@ -14,9 +14,9 @@ public interface Client extends Server {
 
     Channel getChannel();
 
-    boolean isStarted();
-
     void reconnect();
+
+    boolean isStarted();
 
     ClientBuilder getClientBuilder();
 

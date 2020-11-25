@@ -197,6 +197,8 @@ public class ClientImpl implements Client {
             try {
                 if (!shutdown) {
                     start();
+                }else {
+                    log.info("shutdown not reconnect!");
                 }
             } catch (IOException e) {
                 log.error("client reconnect error", e);

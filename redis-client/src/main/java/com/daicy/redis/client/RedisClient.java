@@ -3,6 +3,7 @@ package com.daicy.redis.client;
 import com.daicy.redis.client.codec.ReplyDecoder;
 import com.daicy.redis.client.codec.ReplyEncoder;
 import com.daicy.redis.client.handler.RedisClientHandler;
+import com.daicy.redis.protocal.MultiBulkRedisMessage;
 import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.remoting.transport.netty4.client.Client;
 import com.daicy.remoting.transport.netty4.client.ClientBuilder;
@@ -17,10 +18,15 @@ import io.netty.handler.codec.redis.RedisArrayAggregator;
 import io.netty.handler.codec.redis.RedisBulkStringAggregator;
 import io.netty.handler.codec.redis.RedisDecoder;
 import io.netty.handler.codec.redis.RedisEncoder;
+import io.netty.util.Timeout;
+import io.netty.util.TimerTask;
 import io.netty.util.concurrent.ScheduledFuture;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.TimeUnit;
+
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author: create by daichangya
@@ -63,12 +69,27 @@ public class RedisClient implements ClientCallback<RedisMessage> {
     @Override
     public void onConnect() {
         System.out.println("connected!");
+        ping();
+    }
+
+    private void ping(){
+        client.getClientBuilder().getTimer().newTimeout(new TimerTask() {
+            @Override
+            public void run(Timeout timeout) throws Exception {
+                String[] commands = "ping".split("\\s+");
+                RedisMessage redisMessage =
+                        new MultiBulkRedisMessage(asList(commands).stream().map(RedisMessage::string).collect(toList()));
+                ClientPromise<RedisMessage> promise = send(redisMessage,-1);
+                log.info(new String(promise.get().encode()));
+                ping();
+            }
+        }, 1000, TimeUnit.MILLISECONDS);
     }
 
     @Override
     public void onDisconnect() {
+        client.reconnect();
         System.out.println("disconnected! 88");
-//        client.reconnect();
     }
 
 
