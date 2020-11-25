@@ -1,13 +1,18 @@
-package com.daicy.remoting.transport.netty4;
+/*
+ * Copyright (c) 2015-2020, Antonio Gabriel Muñoz Conejo <antoniogmc at gmail dot com>
+ * Distributed under the terms of the MIT License
+ */
+package com.daicy.remoting.transport.netty4.client;
 
-
-import io.netty.bootstrap.ServerBootstrap;
+import com.daicy.remoting.transport.netty4.Server;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.concurrent.GuardedBy;
@@ -18,11 +23,13 @@ import java.util.concurrent.CompletionStage;
 
 import static com.google.common.base.Preconditions.checkState;
 
-/**
- * ServerImpl
- */
 @Slf4j
-public class ServerImpl implements Server {
+public class ClientImpl implements Client {
+
+    private Bootstrap bootstrap;
+    private EventLoopGroup workerGroup;
+
+    private Channel channel;
 
     private final Object lock = new Object();
 
@@ -31,20 +38,15 @@ public class ServerImpl implements Server {
     @GuardedBy("lock")
     private boolean shutdown;
 
-    private ServerBuilder builder;
-
-    private Channel channel;
-
-    private EventLoopGroup bossGroup;
-    private EventLoopGroup workerGroup;
-
     private final CompletableFuture<Server> startFuture = new CompletableFuture<>();
     private final CompletableFuture<Server> shutdownFuture = new CompletableFuture<>();
     private final CompletableFuture<Server> channelsUpFuture = new CompletableFuture<>();
     private final CompletableFuture<Server> channelsCloseFuture = new CompletableFuture<>();
 
-    public ServerImpl(ServerBuilder serverBuilder) {
-        this.builder = serverBuilder;
+    private ClientBuilder builder;
+
+    public ClientImpl(ClientBuilder builder) {
+        this.builder = builder;
     }
 
     @Override
@@ -55,21 +57,20 @@ public class ServerImpl implements Server {
             channelsUpFuture.thenAccept(this::started);
             channelsCloseFuture.whenComplete((webServer, throwable) -> shutdown(throwable));
             // Configure the server.
-            bossGroup = new NioEventLoopGroup(builder.getAcceptors());
             workerGroup = new NioEventLoopGroup(builder.getIoWorkers());
             try {
+                bootstrap = new Bootstrap().group(workerGroup)
+                        .channel(NioSocketChannel.class)
+//                      .handler(new LoggingHandler(LogLevel.INFO))
+                        .option(ChannelOption.SO_BACKLOG, builder.getBacklog())
+                        .option(ChannelOption.TCP_NODELAY, true)
+                        .option(ChannelOption.SO_SNDBUF, builder.getSendBuffer())
+                        .option(ChannelOption.SO_RCVBUF, builder.getRecvBuffer())
+                        .option(ChannelOption.SO_KEEPALIVE, true)
+                        .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+                        .handler(builder.getChannelInitializer());
 
-                ServerBootstrap bootstrap = new ServerBootstrap().group(bossGroup, workerGroup)
-                        .channel(NioServerSocketChannel.class)
-//                    .handler(new LoggingHandler(LogLevel.INFO))
-                        .childHandler(builder.getChannelInitializer());
-
-                bootstrap.option(ChannelOption.SO_BACKLOG, builder.getBacklog());
-                bootstrap.childOption(ChannelOption.TCP_NODELAY, true);
-                bootstrap.childOption(ChannelOption.SO_SNDBUF, builder.getSendBuffer());
-                bootstrap.childOption(ChannelOption.SO_RCVBUF, builder.getRecvBuffer());
-
-                bootstrap.bind(builder.getPort()).addListener(channelFuture -> {
+                bootstrap.connect(builder.getHost(), builder.getPort()).addListener(channelFuture -> {
                     String name = bootstrap.toString();
                     if (!channelFuture.isSuccess()) {
                         log.info("Channel '" + name + "' startup failed with message '"
@@ -125,6 +126,7 @@ public class ServerImpl implements Server {
         startFuture.complete(server);
     }
 
+
     @Override
     public int getPort() {
         synchronized (lock) {
@@ -134,9 +136,9 @@ public class ServerImpl implements Server {
     }
 
     private void shutdown(Throwable cause) {
-        bossGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();
         shutdownFuture.complete(this);
+        started = false;
         log.info("shutdowned!");
     }
 
@@ -179,4 +181,36 @@ public class ServerImpl implements Server {
         builder.getServerContext().start();
     }
 
+    @Override
+    public Channel getChannel() {
+        return channel;
+    }
+
+    @Override
+    public boolean isStarted() {
+        return started;
+    }
+
+    @Override
+    public void reconnect() {
+        synchronized (lock) {
+            try {
+                if (!shutdown) {
+                    start();
+                }
+            } catch (IOException e) {
+                log.error("client reconnect error", e);
+            }
+        }
+    }
+
+    @Override
+    public ClientBuilder getClientBuilder() {
+        return builder;
+    }
+
+    @Override
+    public EventLoopGroup getEventLoopGroup() {
+        return bootstrap.config().group();
+    }
 }

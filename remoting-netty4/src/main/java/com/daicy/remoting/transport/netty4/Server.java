@@ -19,7 +19,7 @@ package com.daicy.remoting.transport.netty4;
 
 import java.io.IOException;
 import java.net.SocketAddress;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 
 /**
@@ -37,7 +37,7 @@ public interface Server {
      * @throws IOException           if unable to bind
      * @since 1.0.0
      */
-    public abstract CompletionStage<Server> start() throws IOException;
+    public abstract CompletableFuture<Server> start() throws IOException;
 
     /**
      * Returns the port number the server is listening on.  This can return -1 if there is no actual
@@ -57,7 +57,7 @@ public interface Server {
      * @return {@code this} object
      * @since 1.0.0
      */
-    public abstract CompletionStage<Server> shutdown();
+    public abstract CompletableFuture<Server> shutdown();
 
 
     /**

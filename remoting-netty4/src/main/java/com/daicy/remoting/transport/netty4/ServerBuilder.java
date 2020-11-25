@@ -47,7 +47,7 @@ public class ServerBuilder {
 
     private ServerContext serverContext;
 
-    private ServerBuilder(int port) {
+    protected ServerBuilder(int port) {
         this.port = port;
     }
 

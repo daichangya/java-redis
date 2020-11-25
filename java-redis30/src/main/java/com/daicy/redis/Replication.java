@@ -1,10 +1,11 @@
 package com.daicy.redis;
 
-import com.daicy.redis.client.utils.RedisMessageUtils;
 import com.daicy.remoting.transport.netty4.ClientSession;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Set;
+
+import static com.daicy.redis.RedisConstants.REDIS_REPL_CONNECT;
 
 /**
  * @author: create by daichangya
@@ -62,5 +63,19 @@ public class Replication {
             Replication.freeClient(redisClientSession);
         }
         Replication.disconnectSlaves();
+        redisServerContext.setRepl_state(REDIS_REPL_CONNECT);
     }
+
+//    public static void connectWithMaster(String host, String port) {
+//        RedisClient2
+//        redisServerContext.setMasterhost(host);
+//        redisServerContext.setMasterport(port);
+//        RedisClientSession redisClientSession = redisServerContext.getMaster();
+//        if (null != redisClientSession) {
+//            Replication.freeClient(redisClientSession);
+//        }
+//        Replication.disconnectSlaves();
+//        redisServerContext.setRepl_state(REDIS_REPL_CONNECT);
+//    }
+
 }

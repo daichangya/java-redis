@@ -1,7 +1,5 @@
-package com.daicy.redis.client.handler;
+package com.daicy.remoting.transport.netty4.redisclient;
 
-import com.daicy.redis.client.RedisCommand;
-import com.daicy.remoting.transport.netty4.client.Client;
 import com.daicy.remoting.transport.netty4.client.ClientCallback;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;

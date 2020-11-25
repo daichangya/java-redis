@@ -72,6 +72,7 @@ public class PersistenceManager {
         exportRDB();
         rdbToSlave();
         createRedo();
+//        RedisClient2 redisClient
         Request request = new DefaultRequest("PING", null, null, redisServerContext);
         Replication.replicationFeedSlaves(request);
     }

@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
+import static com.daicy.redis.RedisConstants.REDIS_REPL_NONE;
+
 /**
  * @author: create by daichangya
  * @version: v1.0
@@ -34,6 +36,9 @@ public class DefaultRedisServerContext extends AbstractServerContext implements 
     private String masterhost;
 
     private String masterport;
+
+    // 复制的状态（服务器是从服务器时使用）
+    private int repl_state = REDIS_REPL_NONE;          /* Replication status if the instance is a slave */
 
     private final DBCommandSuite commands = new DBCommandSuite();
 
@@ -185,5 +190,13 @@ public class DefaultRedisServerContext extends AbstractServerContext implements 
 
     public void setMasterport(String masterport) {
         this.masterport = masterport;
+    }
+
+    public int getRepl_state() {
+        return repl_state;
+    }
+
+    public void setRepl_state(int repl_state) {
+        this.repl_state = repl_state;
     }
 }

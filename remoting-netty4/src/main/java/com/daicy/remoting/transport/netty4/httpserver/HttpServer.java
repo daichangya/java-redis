@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package com.daicy.remoting.transport.netty4.http;
+package com.daicy.remoting.transport.netty4.httpserver;
 
 import com.daicy.remoting.transport.netty4.Server;
 import com.daicy.remoting.transport.netty4.ServerBuilder;

@@ -26,6 +26,6 @@ public class RedisServer {
                     t.printStackTrace(System.err);
                     return null;
                 });
-
+        System.out.println("end!!!");
     }
 }

@@ -1,26 +1,26 @@
-package com.daicy.redis.client;
+package com.daicy.remoting.transport.netty4.redisclient;
 
-import com.daicy.redis.client.codec.ReplyDecoder;
-import com.daicy.redis.client.codec.ReplyEncoder;
-import com.daicy.redis.client.handler.RedisClientHandler;
-import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.remoting.transport.netty4.client.Client;
 import com.daicy.remoting.transport.netty4.client.ClientBuilder;
 import com.daicy.remoting.transport.netty4.client.ClientCallback;
 import com.daicy.remoting.transport.netty4.client.ClientPromise;
 import com.daicy.remoting.transport.netty4.client.handler.ClientInitializer;
+import io.netty.buffer.ByteBufUtil;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.redis.RedisArrayAggregator;
-import io.netty.handler.codec.redis.RedisBulkStringAggregator;
-import io.netty.handler.codec.redis.RedisDecoder;
-import io.netty.handler.codec.redis.RedisEncoder;
+import io.netty.handler.codec.redis.*;
 import io.netty.util.concurrent.ScheduledFuture;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author: create by daichangya
@@ -54,9 +54,7 @@ public class RedisClient implements ClientCallback<RedisMessage> {
         p.addLast(new RedisDecoder());
         p.addLast(new RedisBulkStringAggregator());
         p.addLast(new RedisArrayAggregator());
-        p.addLast(new ReplyDecoder());
         p.addLast(new RedisEncoder());
-        p.addLast(new ReplyEncoder());
         p.addLast(new RedisClientHandler(this));
     }
 
@@ -87,7 +85,7 @@ public class RedisClient implements ClientCallback<RedisMessage> {
             @Override
             public void run() {
                 RedisException ex = new RedisException("Command execution timeout for command: "
-                        + new String(redisMessage.encode())
+                        + redisMessage.toString()
                         + ", Redis client: " + client.getClientBuilder().getHost());
                 promise.tryFailure(ex);
             }
@@ -113,4 +111,16 @@ public class RedisClient implements ClientCallback<RedisMessage> {
         return getClient().getChannel().writeAndFlush(redisCommand);
     }
 
+
+    public static void main(String[] args) throws Exception {
+        RedisClient redisClient = new RedisClient();
+        String[] commands = "keys *".split("\\s+");
+        List<RedisMessage> children = new ArrayList<RedisMessage>(commands.length);
+        for (String cmdString : commands) {
+            children.add(new FullBulkStringRedisMessage(Unpooled.wrappedBuffer(cmdString.getBytes())));
+        }
+        RedisMessage redisMessage = new ArrayRedisMessage(children);
+        ClientPromise promise = redisClient.send(redisMessage,-1);
+        System.out.println(promise.get());
+    }
 }

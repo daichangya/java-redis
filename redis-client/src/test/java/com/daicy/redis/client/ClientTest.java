@@ -5,6 +5,10 @@ import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.lettuce.core.api.sync.RedisStringCommands;
 import org.junit.Test;
+import org.redisson.Redisson;
+import org.redisson.api.RMap;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
 import redis.clients.jedis.Jedis;
 
 import java.util.List;
@@ -41,5 +45,13 @@ public class ClientTest {
 //        jedis.lpush();
         System.out.println(result);
         System.out.println(value);
+    }
+
+
+    @Test
+    public void testRedisson(){
+        RedissonClient redisson = Redisson.create();
+        RMap rMap = redisson.getMap("abc");
+        rMap.get("bcd");
     }
 }
