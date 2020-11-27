@@ -21,6 +21,7 @@ import com.daicy.redis.client.utils.RedisMessageUtils;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.NavigableSet;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
@@ -39,7 +40,7 @@ public class SortedSetReverseRangeCommand implements DBCommand {
     public RedisMessage execute(RedisDb redisDb, Request request) {
         try {
             Dict db = redisDb.getDict();
-            NavigableSet<Entry<Double, String>> set = db.getSortedSet(request.getParamStr(0));
+            Set<Entry<Double, String>> set = db.getSortedSet(request.getParamStr(0));
 
             int from = Integer.parseInt(request.getParamStr(2));
             if (from < 0) {

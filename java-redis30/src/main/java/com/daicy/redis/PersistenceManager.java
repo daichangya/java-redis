@@ -9,8 +9,11 @@ import com.daicy.redis.persistence.RDBInputStream;
 import com.daicy.redis.persistence.RDBOutputStream;
 import com.daicy.redis.protocal.*;
 import com.daicy.redis.protocal.io.RedisSourceInputStream;
+import com.daicy.redis.storage.DictKey;
+import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
 import com.daicy.remoting.transport.netty4.ClientSession;
+import com.google.common.collect.Lists;
 import io.netty.channel.DefaultFileRegion;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
@@ -19,14 +22,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.daicy.redis.RedisConstants.REDIS_REPL_ONLINE;
-import static com.daicy.redis.RedisConstants.REDIS_REPL_SEND_BULK;
-import static com.daicy.redis.RedisConstants.REDIS_REPL_WAIT_BGSAVE_END;
+import static com.daicy.redis.RedisConstants.*;
 import static java.util.Objects.requireNonNull;
 
 public class PersistenceManager {
@@ -115,7 +117,7 @@ public class PersistenceManager {
                     }
                     LOGGER.info("command: {}", redisMessage);
 
-                    processCommand((MultiBulkRedisMessage) redisMessage);
+                    processCommand(redisMessage);
                 }
             } catch (IOException e) {
                 LOGGER.error("error reading AOF file", e);
@@ -174,12 +176,22 @@ public class PersistenceManager {
             RDBOutputStream rdb = new RDBOutputStream(fileOutputStream);
             rdb.preamble(RDB_VERSION);
             List<RedisDb> databases = redisServerContext.getDatabases();
+            List<Map<DictKey, DictValue>> dictList = Lists.newArrayList();
+            List<Map<DictKey, DictValue>> expireList = Lists.newArrayList();
             for (int i = 0; i < databases.size(); i++) {
                 RedisDb db = databases.get(i);
                 if (!db.getDict().isEmpty()) {
-                    rdb.select(i);
-                    rdb.dabatase(db);
+                    dictList.add(db.getDict().fork());
+                    expireList.add(db.getExpires().fork());
                 }
+            }
+            for (int i = 0; i < dictList.size(); i++) {
+                rdb.select(i);
+                Map<DictKey, DictValue> dict = dictList.get(i);
+                Map<DictKey, DictValue> expires = expireList.get(i);
+                rdb.dabatase(dict, expires);
+                dict = null;
+                expires = null;
             }
             rdb.end();
             tempFile.renameTo(new File(dumpFile));

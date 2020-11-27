@@ -4,13 +4,13 @@
  */
 package com.daicy.redis.storage;
 
-import java.util.HashMap;
+import com.daicy.collections.CowHashMap;
 
 public class OnHeapDictFactory implements DictFactory {
 
   @Override
   public Dict create() {
-    return new OnHeapDict(new HashMap<>());
+    return new OnHeapDict(new CowHashMap<>());
   }
 
   @Override

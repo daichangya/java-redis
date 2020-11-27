@@ -5,22 +5,33 @@
 package com.daicy.redis.storage;
 
 
+import com.daicy.collections.CowHashMap;
+import com.daicy.collections.CowMap;
+import com.daicy.collections.CowTreeSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
 
-public class SortedSet implements NavigableSet<Entry<Double, String>>, Serializable {
+public class CowSortedSet implements Set<Entry<Double, String>>, Serializable {
 
     private static final long serialVersionUID = -2221385877842299451L;
 
-    private transient Map<String, Double> items = new HashMap<>();
+    private transient CowMap<String, Double> items = new CowHashMap<>();
 
-    private transient NavigableSet<Entry<Double, String>> scores = new TreeSet<>(this::compare);
+    private transient CowTreeSet<Entry<Double, String>> scores = new CowTreeSet<>(this::compare);
+
+
+    public CowSortedSet(CowMap<String, Double> items, CowTreeSet<Entry<Double, String>> scores) {
+        this.items = items;
+        this.scores = scores;
+    }
+
+    public CowSortedSet() {
+    }
 
     @Override
     public int size() {
@@ -125,110 +136,16 @@ public class SortedSet implements NavigableSet<Entry<Double, String>>, Serializa
         scores.clear();
     }
 
-    @Override
-    public Comparator<? super Entry<Double, String>> comparator() {
-        return scores.comparator();
-    }
-
-    @Override
-    public Entry<Double, String> first() {
-        return scores.first();
-    }
-
-    @Override
-    public Entry<Double, String> last() {
-        return scores.last();
-    }
-
-    @Override
-    public Entry<Double, String> lower(Entry<Double, String> e) {
-        return scores.lower(e);
-    }
-
-    @Override
-    public Entry<Double, String> floor(Entry<Double, String> e) {
-        return scores.floor(e);
-    }
-
-    @Override
-    public Entry<Double, String> ceiling(Entry<Double, String> e) {
-        return scores.ceiling(e);
-    }
-
-    @Override
-    public Entry<Double, String> higher(Entry<Double, String> e) {
-        return scores.higher(e);
-    }
-
-    @Override
-    public Entry<Double, String> pollFirst() {
-        return scores.pollFirst();
-    }
-
-    @Override
-    public Entry<Double, String> pollLast() {
-        return scores.pollLast();
-    }
-
-    @Override
-    public NavigableSet<Entry<Double, String>> descendingSet() {
-        return scores.descendingSet();
-    }
-
-    @Override
-    public Iterator<Entry<Double, String>> descendingIterator() {
-        return scores.descendingIterator();
-    }
-
-    @Override
-    public NavigableSet<Entry<Double, String>> subSet(Entry<Double, String> fromElement,
-                                                      boolean fromInclusive, Entry<Double, String> toElement, boolean toInclusive) {
-        return scores.subSet(fromElement, fromInclusive, toElement, toInclusive);
-    }
-
-    @Override
-    public NavigableSet<Entry<Double, String>> headSet(Entry<Double, String> toElement,
-                                                       boolean inclusive) {
-        return scores.headSet(toElement, inclusive);
-    }
-
-    @Override
-    public NavigableSet<Entry<Double, String>> tailSet(Entry<Double, String> fromElement,
-                                                       boolean inclusive) {
-        return scores.tailSet(fromElement, inclusive);
-    }
-
-    @Override
-    public java.util.SortedSet<Entry<Double, String>> subSet(Entry<Double, String> fromElement,
-                                                             Entry<Double, String> toElement) {
-        return scores.subSet(fromElement, toElement);
-    }
-
-    @Override
-    public java.util.SortedSet<Entry<Double, String>> headSet(Entry<Double, String> toElement) {
-        return scores.headSet(toElement);
-    }
-
-    @Override
-    public java.util.SortedSet<Entry<Double, String>> tailSet(Entry<Double, String> fromElement) {
-        return scores.tailSet(fromElement);
-    }
 
     public double score(String key) {
         Double score = items.get(key);
         return null == score ? 0 : score;
     }
 
-    public int ranking(String key) {
-        if (items.containsKey(key)) {
-            double score = items.get(key);
-
-            Set<Entry<Double, String>> head = scores.headSet(DictValue.score(score, key));
-
-            return head.size();
-        }
-        return -1;
+    public CowSortedSet fork() {
+        return new CowSortedSet(items.fork(), scores.fork());
     }
+
 
     @Override
     public int hashCode() {
@@ -274,18 +191,10 @@ public class SortedSet implements NavigableSet<Entry<Double, String>>, Serializa
         return o1.getValue().compareTo(o2.getValue());
     }
 
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        out.writeObject(items);
-    }
-
-    @SuppressWarnings("unchecked")
-    private void readObject(ObjectInputStream input) throws IOException, ClassNotFoundException {
-        Map<String, Double> entries = (Map<String, Double>) input.readObject();
-        this.items = new HashMap<>();
-        this.scores = new TreeSet<>(this::compare);
-        for (Entry<String, Double> entry : entries.entrySet()) {
-            items.put(entry.getKey(), entry.getValue());
-            scores.add(new AbstractMap.SimpleEntry<>(entry.getValue(), entry.getKey()));
-        }
+    public Set<Entry<Double, String>> subSet(Entry<Double, String> fromElement, boolean fromInclusive,
+                                             Entry<Double, String> toElement, boolean toInclusive) {
+        TreeSet<Entry<Double, String>> treeSet = new TreeSet<Entry<Double, String>>(this::compare);
+        Iterables.addAll(treeSet, scores.subSet(fromElement, fromInclusive, toElement, toInclusive));
+        return treeSet;
     }
 }

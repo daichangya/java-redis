@@ -16,6 +16,7 @@ import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.DictKey;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -32,7 +33,7 @@ public class HashSetCommand implements DBCommand {
     @Override
     public RedisMessage execute(RedisDb db, Request request) {
 
-        DictValue dictValue = hash(Pair.of(request.getParamStr(1), request.getParamStr(2)));
+        DictValue dictValue = hash(ImmutableMap.of(request.getParamStr(1), request.getParamStr(2)));
         List<String> paramsStrList = request.getParamsStrList();
         DictKey dictKey = safeKey(paramsStrList.get(0));
         DictValue oldValue = db.getDict().putIfAbsent(dictKey, dictValue);

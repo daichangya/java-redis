@@ -15,7 +15,7 @@ import com.daicy.redis.protocal.IntegerRedisMessage;
 import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.RedisDb;
-import com.daicy.redis.storage.SortedSet;
+import com.daicy.redis.storage.CowSortedSet;
 
 @ReadOnly
 @Command("zcard")
@@ -25,7 +25,7 @@ public class SortedSetCardinalityCommand implements DBCommand {
 
     @Override
     public RedisMessage execute(RedisDb db, Request request) {
-        SortedSet sortedSet = db.getDict().getSortedSet(request.getParamStr(0));
+        CowSortedSet sortedSet = db.getDict().getSortedSet(request.getParamStr(0));
         return new IntegerRedisMessage(sortedSet.size());
     }
 }

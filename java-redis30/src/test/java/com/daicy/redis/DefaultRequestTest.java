@@ -1,10 +1,6 @@
 package com.daicy.redis;
 
-import com.daicy.redis.client.utils.RedisMessageUtils;
-import com.google.common.collect.Lists;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 /**
  * @author: create by daichangya
@@ -18,4 +14,5 @@ public class DefaultRequestTest {
     public void getParamsStrList() {
 
     }
+
 }

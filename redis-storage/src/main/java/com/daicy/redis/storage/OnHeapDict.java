@@ -5,6 +5,8 @@
 package com.daicy.redis.storage;
 
 
+import com.daicy.collections.CowHashMap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -12,6 +14,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -61,18 +64,24 @@ public class OnHeapDict implements Dict {
     }
 
     @Override
+    public Map fork() {
+        if (cache instanceof CowHashMap) {
+            CowHashMap<DictKey, DictValue> cowHashMap = ((CowHashMap) cache).fork();
+            for (Entry<DictKey, DictValue> entry : cowHashMap.entrySet()) {
+                entry.setValue(entry.getValue().fork());
+            }
+        }
+        return ImmutableMap.copyOf(cache);
+    }
+
+    @Override
     public ImmutableSet<DictKey> keySet() {
         return ImmutableSet.copyOf(cache.keySet());
     }
 
-    //
-//  @Override
-//  public Sequence<DictValue> values() {
-//    return ImmutableSet.from(cache.values());
-//  }
-//
+
     @Override
-    public List<Pair<DictKey, DictValue>> entryList() {
-        return cache.entrySet().stream().map(entry -> Pair.of(entry.getKey(), entry.getValue())).collect(Collectors.toList());
+    public Set<Map.Entry<DictKey, DictValue>> entrySet() {
+        return cache.entrySet();
     }
 }

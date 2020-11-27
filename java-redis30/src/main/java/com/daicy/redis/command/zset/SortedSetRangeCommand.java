@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.NavigableSet;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.daicy.redis.storage.DictKey.safeKey;
@@ -40,7 +41,7 @@ public class SortedSetRangeCommand implements DBCommand {
     public RedisMessage execute(RedisDb redisDb, Request request) {
         try {
             Dict db = redisDb.getDict();
-            NavigableSet<Entry<Double, String>> set = db.getSortedSet(request.getParamStr(0));
+            Set<Entry<Double, String>> set = db.getSortedSet(request.getParamStr(0));
 
             int from = Integer.parseInt(request.getParamStr(1));
             if (from < 0) {

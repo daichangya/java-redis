@@ -19,6 +19,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.LinkedList;
+import java.util.List;
 
 import static com.daicy.redis.protocal.RedisMessageConstants.*;
 
@@ -36,7 +37,7 @@ public class ListSetCommand implements DBCommand {
             if (null != value.getRight()) {
                 return value.getRight();
             }
-            LinkedList<String> list = (LinkedList<String>) value.getLeft().getList();
+            List<String> list = value.getLeft().getList();
             if (CollectionUtils.isEmpty(list)) {
                 return NULL;
             }

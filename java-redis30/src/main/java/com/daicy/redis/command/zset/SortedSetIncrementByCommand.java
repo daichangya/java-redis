@@ -39,7 +39,7 @@ public class SortedSetIncrementByCommand implements DBCommand {
                 return new BulkRedisMessage(String.valueOf(increment));
             }
 
-            SortedSet oldValueSortedSet = oldValue.getSortedSet();
+            CowSortedSet oldValueSortedSet = oldValue.getSortedSet();
             Entry<Double, String> newEntry = merge(oldValueSortedSet, key, increment);
             oldValueSortedSet.remove(newEntry);
             oldValueSortedSet.add(newEntry);
@@ -49,7 +49,7 @@ public class SortedSetIncrementByCommand implements DBCommand {
         }
     }
 
-    private Entry<Double, String> merge(SortedSet set, String key, Double increment) {
+    private Entry<Double, String> merge(CowSortedSet set, String key, Double increment) {
         return score(set.score(key) + increment, key);
     }
 }

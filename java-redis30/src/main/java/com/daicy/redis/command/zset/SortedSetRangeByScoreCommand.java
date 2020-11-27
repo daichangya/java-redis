@@ -14,6 +14,7 @@ import com.daicy.redis.client.utils.RedisMessageUtils;
 import com.daicy.redis.command.DBCommand;
 import com.daicy.redis.protocal.ErrorRedisMessage;
 import com.daicy.redis.protocal.RedisMessage;
+import com.daicy.redis.storage.CowSortedSet;
 import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.Dict;
 import com.daicy.redis.storage.RedisDb;
@@ -21,7 +22,6 @@ import com.google.common.collect.Lists;
 
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.NavigableSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -45,7 +45,7 @@ public class SortedSetRangeByScoreCommand implements DBCommand {
     public RedisMessage execute(RedisDb redisDb, Request request) {
         try {
             Dict db = redisDb.getDict();
-            NavigableSet<Entry<Double, String>> set = db.getSortedSet(request.getParamStr(0));
+            CowSortedSet set = db.getSortedSet(request.getParamStr(0));
 
             float from = parseRange(request.getParamStr(1));
             float to = parseRange(request.getParamStr(2));

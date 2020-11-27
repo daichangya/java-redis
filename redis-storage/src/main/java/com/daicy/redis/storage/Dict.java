@@ -6,7 +6,6 @@ package com.daicy.redis.storage;
 
 
 import com.google.common.collect.ImmutableSet;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 import java.util.Map;
@@ -32,9 +31,11 @@ public interface Dict {
 
     void clear();
 
+    Map fork();
+
     ImmutableSet<DictKey> keySet();
 
-    List<Pair<DictKey, DictValue>> entryList();
+    Set<Map.Entry<DictKey,DictValue>> entrySet();
 
     default String getString(String key) {
         return getOrDefault(safeKey(key), DictValue.EMPTY_STRING).getString();
@@ -48,7 +49,7 @@ public interface Dict {
         return getOrDefault(safeKey(key), DictValue.EMPTY_SET).getSet();
     }
 
-    default SortedSet getSortedSet(String key) {
+    default CowSortedSet getSortedSet(String key) {
         return getOrDefault(safeKey(key), DictValue.EMPTY_ZSET).getSortedSet();
     }
 

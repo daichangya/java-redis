@@ -19,6 +19,7 @@
         <module>rediso-original</module>
         <module>redis-persistence</module>
         <module>redis-context</module>
+        <module>persistence-colletions</module>
     </modules>
 
     <properties>

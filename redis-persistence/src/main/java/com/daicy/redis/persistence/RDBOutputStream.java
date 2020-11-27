@@ -10,16 +10,15 @@ import com.daicy.redis.persistence.utils.CRC64;
 import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.DictKey;
 import com.daicy.redis.storage.DictValue;
-import com.daicy.redis.storage.RedisDb;
-import com.google.common.collect.ImmutableMap;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.zip.CheckedOutputStream;
 
 import static java.util.Objects.requireNonNull;
@@ -56,16 +55,20 @@ public class RDBOutputStream {
         length(db);
     }
 
-    public void dabatase(RedisDb db) throws IOException {
-        ImmutableMap<DictKey, DictValue> dict = ImmutableMap.copyOf(db.getDict().entryList());
-        ImmutableMap<DictKey, DictValue> expires = ImmutableMap.copyOf(db.getExpires().entryList());
+    public void dabatase(Map<DictKey, DictValue> dict, Map<DictKey, DictValue> expires) throws IOException {
         for (Entry<DictKey, DictValue> entry : dict.entrySet()) {
             value(entry.getKey(), entry.getValue(), expires.get(entry.getKey()));
         }
     }
 
     private void value(DictKey key, DictValue value, DictValue expired) throws IOException {
-        expiredAt(expired);
+        if(null != expired){
+            boolean isExpired = expired.isExpired(Instant.now());
+            if (isExpired) {
+                return;
+            }
+            expiredAt(expired);
+        }
         type(value.getType());
         key(key);
         value(value);
@@ -94,15 +97,15 @@ public class RDBOutputStream {
             case LIST:
                 list(value.getList());
                 break;
-//    case HASH:
-//      hash(value.getHash());
-//      break;
-//    case SET:
-//      set(value.getSet());
-//      break;
-//    case ZSET:
-//      zset(value.getSortedSet());
-//      break;
+            case HASH:
+                hash(value.getHash());
+                break;
+            case SET:
+                set(value.getSet());
+                break;
+            case ZSET:
+                zset(value.getSortedSet());
+                break;
             default:
                 break;
         }
@@ -143,28 +146,28 @@ public class RDBOutputStream {
         }
     }
 
-//  private void hash(ImmutableMap<String, String> value) throws IOException {
-//    length(value.size());
-//    for (Tuple2<String, String> entry : value.entries()) {
-//      string(entry.get1());
-//      string(entry.get2());
-//    }
-//  }
-//
-//  private void set(ImmutableSet<String> value) throws IOException {
-//    length(value.size());
-//    for (String item : value) {
-//      string(item);
-//    }
-//  }
-//
-//  private void zset(NavigableSet<Entry<Double, String>> value) throws IOException {
-//    length(value.size());
-//    for (Entry<Double, String> item : value) {
-//      string(item.getValue());
-//      string(item.getKey());
-//    }
-//  }
+    private void hash(Map<String, String> value) throws IOException {
+        length(value.size());
+        for (Entry<String, String> entry : value.entrySet()) {
+            string(entry.getKey());
+            string(entry.getValue());
+        }
+    }
+
+    private void set(Set<String> value) throws IOException {
+        length(value.size());
+        for (String item : value) {
+            string(item);
+        }
+    }
+
+    private void zset(Set<Entry<Double, String>> value) throws IOException {
+        length(value.size());
+        for (Entry<Double, String> item : value) {
+            string(item.getValue());
+            string(item.getKey());
+        }
+    }
 
     public void end() throws IOException {
         out.write(END_OF_STREAM);

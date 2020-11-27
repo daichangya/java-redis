@@ -5,21 +5,23 @@
 package com.daicy.redis.storage;
 
 
-import com.google.common.collect.*;
-import org.apache.commons.lang3.tuple.Pair;
+import com.daicy.collections.*;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import org.relaxng.datatype.Datatype;
 
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toCollection;
 
 public class DictValue implements Serializable {
 
@@ -27,9 +29,9 @@ public class DictValue implements Serializable {
 
     public static final DictValue EMPTY_STRING = string("");
     public static final DictValue EMPTY_LIST = list();
-    public static final DictValue EMPTY_SET = set(Sets.newHashSet());
+    public static final DictValue EMPTY_SET = set(ImmutableSet.of());
     public static final DictValue EMPTY_ZSET = zset();
-      public static final DictValue EMPTY_HASH = hash();
+    public static final DictValue EMPTY_HASH = hash(ImmutableMap.of());
     public static final DictValue NULL = null;
 
 
@@ -55,40 +57,34 @@ public class DictValue implements Serializable {
         return getValue();
     }
 
-    public List<String> getList() {
+    public CowList<String> getList() {
         requiredType(DataType.LIST);
         return getValue();
     }
 
-    public Set<String> getSet() {
+    public CowSet<String> getSet() {
         requiredType(DataType.SET);
         return getValue();
     }
 
-    public SortedSet getSortedSet() {
+    public CowSortedSet getSortedSet() {
         requiredType(DataType.ZSET);
         return getValue();
     }
 
-    public Map<String, String> getHash() {
+    public CowMap<String, String> getHash() {
         requiredType(DataType.HASH);
         return getValue();
     }
 
-//  public int size() {
-//    return Pattern1.<Object, Integer>build()
-//        .when(instanceOf(Collection.class))
-//          .then(collection -> ((Collection<?>) collection).size())
-//        .when(instanceOf(Sequence.class))
-//          .then(sequence -> ((Sequence<?>) sequence).size())
-//        .when(instanceOf(ImmutableMap.class))
-//          .then(map -> ((ImmutableMap<?, ?>) map).size())
-//        .when(instanceOf(String.class))
-//          .returns(1)
-//        .otherwise()
-//          .returns(0)
-//        .apply(this.value);
-//  }
+    public DictValue fork() {
+        if (DataType.STRING.equals(type) || DataType.LONG.equals(type)) {
+            return this;
+        } else {
+            Forkable forkable = getValue();
+            return new DictValue(type, forkable.fork());
+        }
+    }
 
 
     @Override
@@ -110,61 +106,43 @@ public class DictValue implements Serializable {
         return new DictValue(DataType.STRING, value);
     }
 
-    public static DictValue list(List<String> values) {
-        return new DictValue(DataType.LIST, values);
-    }
-
     public static DictValue list(Collection<String> values) {
-        return new DictValue(DataType.LIST, Lists.newLinkedList(values));
+        CowList cowList = new CowArrayList();
+        cowList.addAll(values);
+        return new DictValue(DataType.LIST, cowList);
     }
 
     public static DictValue list(String... values) {
-        return new DictValue(DataType.LIST, Lists.newLinkedList(Arrays.asList(values)));
+        return list(Lists.newArrayList(values));
     }
 
     public static DictValue set(Collection<String> values) {
-        return new DictValue(DataType.SET, Sets.newHashSet(requireNonNull(values)));
+        CowHashSet cowHashSet = new CowHashSet();
+        cowHashSet.addAll(values);
+        return new DictValue(DataType.SET, cowHashSet);
     }
 
     public static DictValue zset(Collection<Entry<Double, String>> values) {
-        return new DictValue(DataType.ZSET,
-                requireNonNull(values).stream().collect(collectingAndThen(toSortedSet(),
-                        Collections::unmodifiableNavigableSet)));
+        CowSortedSet cowSortedSet = new CowSortedSet();
+        cowSortedSet.addAll(values);
+        return new DictValue(DataType.ZSET, cowSortedSet);
     }
 
     @SafeVarargs
     public static DictValue zset(Entry<Double, String>... values) {
-        return new DictValue(DataType.ZSET,
-                Stream.of(values).collect(collectingAndThen(toSortedSet(),
-                        Collections::unmodifiableNavigableSet)));
+        return zset(Sets.newHashSet(values));
     }
 
 
     public static DictValue hash(Map<String, String> values) {
-        return new DictValue(DataType.HASH, values);
+        CowHashMap cowHashMap = new CowHashMap();
+        cowHashMap.putAll(values);
+        return new DictValue(DataType.HASH, cowHashMap);
     }
-
-    @SafeVarargs
-    public static DictValue hash(Pair<String, String>... values) {
-        return new DictValue(DataType.HASH,
-                Stream.of(values).collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
-    }
-
-//  public static DictValue bitset(int... ones) {
-//    BitSet bitSet = new BitSet();
-//    for (int position : ones) {
-//      bitSet.set(position);
-//    }
-//    return new DictValue(DataType.STRING, new String(bitSet.toByteArray()));
-//  }
 
 
     public static Entry<Double, String> score(double score, String value) {
         return new AbstractMap.SimpleEntry<>(score, value);
-    }
-
-    private static Collector<Entry<Double, String>, ?, NavigableSet<Entry<Double, String>>> toSortedSet() {
-        return toCollection(SortedSet::new);
     }
 
     public long timeToLive(Instant now) {

@@ -34,10 +34,10 @@ public class SortedSetAddCommand implements DBCommand {
     public RedisMessage execute(RedisDb redisDb, Request request) {
         try {
             Dict db = redisDb.getDict();
-            SortedSet initial = db.getSortedSet(request.getParamStr(0));
+            CowSortedSet initial = db.getSortedSet(request.getParamStr(0));
             DictValue result = db.merge(safeKey(request.getParamStr(0)), parseInput(request),
                     (oldValue, newValue) -> {
-                        Set<Map.Entry<Double, String>> merge = new SortedSet();
+                        Set<Map.Entry<Double, String>> merge = new CowSortedSet();
                         merge.addAll(oldValue.getSortedSet());
                         merge.addAll(newValue.getSortedSet());
                         return zset(merge);
@@ -53,7 +53,7 @@ public class SortedSetAddCommand implements DBCommand {
     }
 
     private DictValue parseInput(Request request) {
-        Set<Entry<Double, String>> set = new SortedSet();
+        Set<Entry<Double, String>> set = new CowSortedSet();
         String score = null;
         List<String> paramsStrList = request.getParamsStrList();
         for (String string : paramsStrList.subList(1, paramsStrList.size()).stream().collect(toList())) {
