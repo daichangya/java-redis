@@ -34,7 +34,7 @@ public class SortedSetIncrementByCommand implements DBCommand {
             String key = request.getParamStr(2);
             Double increment = Double.parseDouble(request.getParamStr(1));
             DictValue newValue = DictValue.zset(score(increment,key));
-            DictValue oldValue = db.putIfAbsent(zkey,newValue);
+            DictValue oldValue = db.putIfAbsent(redisDb,zkey,newValue);
             if(null == oldValue){
                 return new BulkRedisMessage(String.valueOf(increment));
             }

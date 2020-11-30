@@ -107,6 +107,15 @@ public class RedisDb {
         this.avg_ttl = avg_ttl;
     }
 
+    public DictValue lookupKeyOrDefault(String key, DictValue defaultValue) {
+        DictKey dictKey = DictKey.safeKey(key);
+        DictValue dictValue = lookupKeyOrExpire(dictKey);
+        if (null == dictValue) {
+            return defaultValue;
+        }
+        return dictValue;
+    }
+
     public Pair<DictValue, RedisMessage> lookupKeyOrReply(String key, DataType dataType, RedisMessage reply) {
         DictKey dictKey = DictKey.safeKey(key);
         DictValue dictValue = lookupKeyOrExpire(dictKey);

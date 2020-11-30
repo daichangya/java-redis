@@ -35,7 +35,7 @@ public class SortedSetAddCommand implements DBCommand {
         try {
             Dict db = redisDb.getDict();
             CowSortedSet initial = db.getSortedSet(request.getParamStr(0));
-            DictValue result = db.merge(safeKey(request.getParamStr(0)), parseInput(request),
+            DictValue result = db.merge(redisDb,safeKey(request.getParamStr(0)), parseInput(request),
                     (oldValue, newValue) -> {
                         Set<Map.Entry<Double, String>> merge = new CowSortedSet();
                         merge.addAll(oldValue.getSortedSet());

@@ -13,6 +13,7 @@ import com.daicy.redis.annotation.ReadOnly;
 import com.daicy.redis.command.DBCommand;
 import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.storage.DataType;
+import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
 import com.daicy.redis.client.utils.RedisMessageUtils;
 
@@ -26,7 +27,8 @@ public class SetMembersCommand implements DBCommand {
 
     @Override
     public RedisMessage execute(RedisDb db, Request request) {
-        Set<String> stringSet = db.getDict().getSet(request.getParamStr(0));
+        Set<String> stringSet = db.lookupKeyOrDefault(request.getParamStr(0),
+                DictValue.EMPTY_SET).getSet();
         return RedisMessageUtils.toRedisMessage(stringSet);
     }
 }

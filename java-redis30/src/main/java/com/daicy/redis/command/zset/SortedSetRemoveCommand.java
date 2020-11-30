@@ -12,15 +12,12 @@ import com.daicy.redis.annotation.ParamType;
 import com.daicy.redis.command.DBCommand;
 import com.daicy.redis.protocal.IntegerRedisMessage;
 import com.daicy.redis.protocal.RedisMessage;
+import com.daicy.redis.storage.CowSortedSet;
 import com.daicy.redis.storage.DataType;
-import com.daicy.redis.storage.DictKey;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
-import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import static com.daicy.redis.protocal.RedisMessageConstants.ZERO;
 
@@ -32,12 +29,13 @@ public class SortedSetRemoveCommand implements DBCommand {
 
     @Override
     public RedisMessage execute(RedisDb db, Request request) {
-        List<String> paramsStrList = request.getParamsStrList();
-        List<String> removeStrs = paramsStrList.subList(1, paramsStrList.size());
-        Set<Entry<Double, String>> stringSet = db.getDict().getSortedSet(request.getParamStr(0));
-        if (CollectionUtils.isEmpty(stringSet)) {
+        CowSortedSet stringSet = db.lookupKeyOrDefault(request.getParamStr(0),
+                DictValue.EMPTY_ZSET).getSortedSet();
+        if (stringSet.size() == 0) {
             return ZERO;
         }
+        List<String> paramsStrList = request.getParamsStrList();
+        List<String> removeStrs = paramsStrList.subList(1, paramsStrList.size());
         int result = 0;
         for (int i = 0; i < removeStrs.size(); i++) {
             if (stringSet.remove(DictValue.score(0, removeStrs.get(i)))) {

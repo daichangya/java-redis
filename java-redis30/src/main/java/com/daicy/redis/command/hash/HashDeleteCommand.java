@@ -32,7 +32,8 @@ public class HashDeleteCommand implements DBCommand {
 
     @Override
     public RedisMessage execute(RedisDb db, Request request) {
-        Map<String, String> dictValueHash = db.getDict().getHash(request.getParamStr(0));
+        Map<String, String> dictValueHash =
+                db.lookupKeyOrDefault(request.getParamStr(0), DictValue.EMPTY_HASH).getHash();
         if (MapUtils.isEmpty(dictValueHash)) {
             return ZERO;
         }

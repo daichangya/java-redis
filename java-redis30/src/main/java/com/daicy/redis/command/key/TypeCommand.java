@@ -13,23 +13,23 @@ import com.daicy.redis.command.DBCommand;
 import com.daicy.redis.protocal.BulkRedisMessage;
 import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.storage.DataType;
+import com.daicy.redis.storage.DictKey;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
-
-import static com.daicy.redis.storage.DictKey.safeKey;
 
 @ReadOnly
 @Command("type")
 @ParamLength(1)
 public class TypeCommand implements DBCommand {
 
-  @Override
-  public RedisMessage execute(RedisDb db, Request request) {
-    DictValue value = db.getDict().get(safeKey(request.getParamStr(0)));
-    if (value != null) {
-      return new BulkRedisMessage(value.getType().text());
-    } else {
-      return new BulkRedisMessage(DataType.NONE.text());
+    @Override
+    public RedisMessage execute(RedisDb db, Request request) {
+        DictValue value =
+                db.lookupKeyOrExpire(DictKey.safeKey(request.getParamStr(0)));
+        if (value == null) {
+            return new BulkRedisMessage(DataType.NONE.text());
+        } else {
+            return new BulkRedisMessage(value.getType().text());
+        }
     }
-  }
 }

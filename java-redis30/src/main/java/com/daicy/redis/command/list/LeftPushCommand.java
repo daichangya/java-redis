@@ -28,7 +28,7 @@ public class LeftPushCommand implements DBCommand {
     @Override
     public RedisMessage execute(RedisDb db, Request request) {
         List<String> paramsStrList = request.getParamsStrList();
-        DictValue result = db.getDict().merge(safeKey(paramsStrList.get(0)),
+        DictValue result = db.getDict().merge(db,safeKey(paramsStrList.get(0)),
                 DictValue.list(paramsStrList.subList(1, paramsStrList.size())),
                 (oldValue, newValue) -> {
                     oldValue.getList().addAll(0, newValue.getList());

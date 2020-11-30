@@ -12,6 +12,7 @@ import com.daicy.redis.annotation.ReadOnly;
 import com.daicy.redis.command.DBCommand;
 import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.storage.DataType;
+import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
 import com.daicy.redis.client.utils.RedisMessageUtils;
 
@@ -25,7 +26,8 @@ public class HashKeysCommand implements DBCommand {
 
   @Override
   public RedisMessage execute(RedisDb db, Request request) {
-    Map<String, String> dictValueHash = db.getDict().getHash(request.getParamStr(0));
+    Map<String, String> dictValueHash =
+            db.lookupKeyOrDefault(request.getParamStr(0), DictValue.EMPTY_HASH).getHash();
     return RedisMessageUtils.toRedisMessage(dictValueHash.keySet());
   }
 }

@@ -35,7 +35,7 @@ public class HashMultiSetCommand implements DBCommand {
             String mapVal = request.getParamStr(paramNumber + 1);
             newValue.put(mapKey,mapVal);
         }
-        DictValue oldValue = redisDb.getDict().putIfAbsent(DictKey.safeKey(request.getParamStr(0)),
+        DictValue oldValue = redisDb.getDict().putIfAbsent(redisDb,DictKey.safeKey(request.getParamStr(0)),
                 DictValue.hash(newValue));
         if(null == oldValue){
             return OK;

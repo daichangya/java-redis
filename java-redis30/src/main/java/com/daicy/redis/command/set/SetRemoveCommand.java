@@ -35,7 +35,8 @@ public class SetRemoveCommand implements DBCommand {
     public RedisMessage execute(RedisDb db, Request request) {
         List<String> paramsStrList = request.getParamsStrList();
         List<String> removeStrs = paramsStrList.subList(1, paramsStrList.size());
-        Set<String> stringSet = db.getDict().getSet(request.getParamStr(0));
+        Set<String> stringSet = db.lookupKeyOrDefault(request.getParamStr(0),
+                DictValue.EMPTY_SET).getSet();
         if (CollectionUtils.isEmpty(stringSet)) {
             return ZERO;
         }

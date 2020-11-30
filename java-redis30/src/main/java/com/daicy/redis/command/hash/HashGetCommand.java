@@ -17,6 +17,8 @@ import com.daicy.redis.storage.DictKey;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
 
+import java.util.Map;
+
 import static com.daicy.redis.protocal.RedisMessageConstants.NULL;
 import static com.daicy.redis.storage.DictKey.safeKey;
 
@@ -28,9 +30,9 @@ public class HashGetCommand implements DBCommand {
 
     @Override
     public RedisMessage execute(RedisDb db, Request request) {
-        DictKey dictKey = safeKey(request.getParamStr(0));
-        DictValue dictValue = db.getDict().getOrDefault(dictKey, DictValue.EMPTY_HASH);
-        String value = dictValue.getHash().get(request.getParamStr(1));
+        Map<String, String> dictValueHash =
+                db.lookupKeyOrDefault(request.getParamStr(0), DictValue.EMPTY_HASH).getHash();
+        String value = dictValueHash.get(request.getParamStr(1));
         if (null == value) {
             return NULL;
         } else {

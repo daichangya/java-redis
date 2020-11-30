@@ -10,18 +10,18 @@ import com.daicy.redis.annotation.Command;
 import com.daicy.redis.annotation.ParamLength;
 import com.daicy.redis.annotation.ParamType;
 import com.daicy.redis.annotation.ReadOnly;
+import com.daicy.redis.client.utils.RedisMessageUtils;
 import com.daicy.redis.command.DBCommand;
 import com.daicy.redis.protocal.ErrorRedisMessage;
+import com.daicy.redis.protocal.MultiBulkRedisMessage;
 import com.daicy.redis.protocal.RedisMessage;
+import com.daicy.redis.storage.CowSortedSet;
 import com.daicy.redis.storage.DataType;
-import com.daicy.redis.storage.Dict;
+import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
-import com.daicy.redis.client.utils.RedisMessageUtils;
 
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.NavigableSet;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptyList;
@@ -39,8 +39,11 @@ public class SortedSetReverseRangeCommand implements DBCommand {
     @Override
     public RedisMessage execute(RedisDb redisDb, Request request) {
         try {
-            Dict db = redisDb.getDict();
-            Set<Entry<Double, String>> set = db.getSortedSet(request.getParamStr(0));
+            CowSortedSet set = redisDb.lookupKeyOrDefault(request.getParamStr(0),
+                    DictValue.EMPTY_ZSET).getSortedSet();
+            if (set.size() == 0) {
+                return new MultiBulkRedisMessage(null);
+            }
 
             int from = Integer.parseInt(request.getParamStr(2));
             if (from < 0) {

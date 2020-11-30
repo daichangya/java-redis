@@ -36,7 +36,7 @@ public class HashSetCommand implements DBCommand {
         DictValue dictValue = hash(ImmutableMap.of(request.getParamStr(1), request.getParamStr(2)));
         List<String> paramsStrList = request.getParamsStrList();
         DictKey dictKey = safeKey(paramsStrList.get(0));
-        DictValue oldValue = db.getDict().putIfAbsent(dictKey, dictValue);
+        DictValue oldValue = db.getDict().putIfAbsent(db,dictKey, dictValue);
         if (null == oldValue) {
             return new IntegerRedisMessage(1);
         }

@@ -13,6 +13,7 @@ import com.daicy.redis.command.DBCommand;
 import com.daicy.redis.protocal.IntegerRedisMessage;
 import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.storage.DataType;
+import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
 
 import java.util.Map;
@@ -26,7 +27,8 @@ public class HashLengthCommand implements DBCommand {
 
   @Override
   public RedisMessage execute(RedisDb db, Request request) {
-    Map<String, String> dictValueHash = db.getDict().getHash(request.getParamStr(0));
+    Map<String, String> dictValueHash =
+            db.lookupKeyOrDefault(request.getParamStr(0), DictValue.EMPTY_HASH).getHash();
     return new IntegerRedisMessage(dictValueHash.size());
   }
 }

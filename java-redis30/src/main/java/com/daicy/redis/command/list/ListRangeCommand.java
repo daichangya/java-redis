@@ -36,7 +36,7 @@ public class ListRangeCommand implements DBCommand {
     @Override
     public RedisMessage execute(RedisDb db, Request request) {
         try {
-            DictValue value = db.getDict().getOrDefault(safeKey(request.getParamStr(0)), DictValue.EMPTY_LIST);
+            DictValue value = db.lookupKeyOrDefault(request.getParamStr(0), DictValue.EMPTY_LIST);
             List<String> list = value.getList();
 
             int from = Integer.parseInt(request.getParamStr(1));

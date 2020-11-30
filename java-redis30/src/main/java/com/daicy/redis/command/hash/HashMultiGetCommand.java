@@ -14,6 +14,7 @@ import com.daicy.redis.protocal.BulkRedisMessage;
 import com.daicy.redis.protocal.MultiBulkRedisMessage;
 import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.storage.DataType;
+import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
 import com.google.common.collect.Lists;
 
@@ -30,7 +31,8 @@ public class HashMultiGetCommand implements DBCommand {
 
     @Override
     public RedisMessage execute(RedisDb db, Request request) {
-        Map<String, String> dictValueHash = db.getDict().getHash(request.getParamStr(0));
+        Map<String, String> dictValueHash =
+                db.lookupKeyOrDefault(request.getParamStr(0), DictValue.EMPTY_HASH).getHash();
         List<RedisMessage> result = Lists.newArrayList();
         for (int paramNumber = 1; paramNumber < request.getParamsStrList().size(); paramNumber++) {
             String oss = dictValueHash.get(request.getParamStr(paramNumber));

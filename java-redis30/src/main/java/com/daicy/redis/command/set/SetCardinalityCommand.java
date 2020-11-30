@@ -14,9 +14,14 @@ import com.daicy.redis.command.DBCommand;
 import com.daicy.redis.protocal.IntegerRedisMessage;
 import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.storage.DataType;
+import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Set;
+
+import static com.daicy.redis.protocal.RedisMessageConstants.NULL;
+import static com.daicy.redis.protocal.RedisMessageConstants.ZERO;
 
 @ReadOnly
 @Command("scard")
@@ -26,7 +31,13 @@ public class SetCardinalityCommand implements DBCommand {
 
     @Override
     public RedisMessage execute(RedisDb db, Request request) {
-        Set<String> stringSet = db.getDict().getSet(request.getParamStr(0));
-        return new IntegerRedisMessage(stringSet.size());
+        Pair<DictValue, RedisMessage> value =
+                db.lookupKeyOrReply(request.getParamStr(0),
+                        DataType.SET, ZERO);
+        if (value.getLeft() == null) {
+            return value.getRight();
+        } else {
+            return new IntegerRedisMessage(value.getLeft().getSet().size());
+        }
     }
 }

@@ -30,7 +30,8 @@ public class SetIsMemberCommand implements DBCommand {
 
     @Override
     public RedisMessage execute(RedisDb db, Request request) {
-        Set<String> stringSet = db.getDict().getSet(request.getParamStr(0));
+        Set<String> stringSet = db.lookupKeyOrDefault(request.getParamStr(0),
+                DictValue.EMPTY_SET).getSet();
         if (stringSet.contains(request.getParamStr(1))) {
             return ONE;
         } else {

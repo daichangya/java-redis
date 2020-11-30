@@ -57,18 +57,17 @@ public interface Dict {
         return getOrDefault(safeKey(key), DictValue.EMPTY_HASH).getHash();
     }
 
-    default DictValue putIfAbsent(DictKey key, DictValue value) {
-        DictValue oldValue = get(key);
+    default DictValue putIfAbsent(RedisDb db,DictKey key, DictValue value) {
+        DictValue oldValue = db.lookupKeyOrExpire(key);
         if (oldValue == null) {
             oldValue = put(key, value);
         }
         return oldValue;
     }
 
-    //
-    default DictValue merge(DictKey key, DictValue value,
+    default DictValue merge(RedisDb db,DictKey key, DictValue value,
                             BiFunction<DictValue, DictValue, DictValue> remappingFunction) {
-        DictValue oldValue = get(key);
+        DictValue oldValue = db.lookupKeyOrExpire(key);
         DictValue newValue = oldValue == null ? value : remappingFunction.apply(oldValue, value);
         if (newValue == null) {
             remove(key);

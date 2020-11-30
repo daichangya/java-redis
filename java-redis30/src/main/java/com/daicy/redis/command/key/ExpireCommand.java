@@ -10,11 +10,11 @@ import com.daicy.redis.annotation.Command;
 import com.daicy.redis.annotation.ParamLength;
 import com.daicy.redis.command.DBCommand;
 import com.daicy.redis.protocal.ErrorRedisMessage;
+import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.storage.DictKey;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
 import com.daicy.redis.utils.DictUtils;
-import com.daicy.redis.protocal.RedisMessage;
 
 import static com.daicy.redis.protocal.RedisMessageConstants.ONE;
 import static com.daicy.redis.protocal.RedisMessageConstants.ZERO;
@@ -27,8 +27,9 @@ public class ExpireCommand implements DBCommand {
     public RedisMessage execute(RedisDb db, Request request) {
         try {
             DictKey dictKey = new DictKey(request.getParamStr(0));
-            DictValue dictValue = db.getDict().get(dictKey);
-            if (null == dictValue) {
+            DictValue value =
+                    db.lookupKeyOrExpire(dictKey);
+            if(null == value){
                 return ZERO;
             }
             db.getExpires().put(dictKey, DictValue.toLong(

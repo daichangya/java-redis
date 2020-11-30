@@ -19,6 +19,7 @@ import com.daicy.redis.storage.RedisDb;
 import com.daicy.redis.client.utils.RedisMessageUtils;
 import com.google.common.collect.Sets;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 import java.util.Set;
@@ -35,14 +36,16 @@ public class SetIntersectionCommand implements DBCommand {
     public RedisMessage execute(RedisDb db, Request request) {
         List<String> paramsStrList = request.getParamsStrList();
         List<String> removeKeys = paramsStrList.subList(1, paramsStrList.size());
-        Set<String> stringSet = db.getDict().getSet(request.getParamStr(0));
-        if (CollectionUtils.isEmpty(stringSet)) {
-            return NULL;
+        Pair<DictValue, RedisMessage> value =
+                db.lookupKeyOrReply(request.getParamStr(0),
+                        DataType.SET, NULL);
+        if (value.getLeft() == null) {
+            return value.getRight();
         }
-        Set<String> result = Sets.newHashSet(stringSet);
+        Set<String> result = Sets.newHashSet(value.getLeft().getSet());
         for (int i = 0; i < removeKeys.size(); i++) {
-            Set<String> removeSet = db.getDict().getOrDefault(
-                    DictKey.safeKey(removeKeys.get(0)), DictValue.EMPTY_SET).getSet();
+            Set<String> removeSet = db.lookupKeyOrDefault(removeKeys.get(0),
+                    DictValue.EMPTY_SET).getSet();
             result.retainAll(removeSet);
         }
         return RedisMessageUtils.toRedisMessage(result);

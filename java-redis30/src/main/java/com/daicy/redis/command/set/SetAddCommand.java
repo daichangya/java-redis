@@ -15,11 +15,11 @@ import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.DictKey;
 import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
 import java.util.Set;
 
-import static com.daicy.redis.storage.DictKey.safeKey;
 
 @Command("sadd")
 @ParamLength(2)
@@ -30,12 +30,12 @@ public class SetAddCommand implements DBCommand {
     public RedisMessage execute(RedisDb db, Request request) {
         List<String> paramsStrList = request.getParamsStrList();
         DictValue dictValue = DictValue.set(paramsStrList.subList(1, paramsStrList.size()));
-        DictKey dictKey = safeKey(paramsStrList.get(0));
-        DictValue oldValue = db.getDict().putIfAbsent(dictKey,dictValue);
-        if(null == oldValue){
+        Set<String> oldValueSet = db.lookupKeyOrDefault(request.getParamStr(0),
+                DictValue.EMPTY_SET).getSet();
+        if (CollectionUtils.isEmpty(oldValueSet)) {
+            db.getDict().put(DictKey.safeKey(request.getParamStr(0)), dictValue);
             return new IntegerRedisMessage(dictValue.getSet().size());
         }
-        Set<String> oldValueSet = oldValue.getSet();
         int oldSize = oldValueSet.size();
         oldValueSet.addAll(dictValue.getSet());
         return new IntegerRedisMessage(oldValueSet.size() - oldSize);

@@ -33,8 +33,8 @@ public class SetUnionCommand implements DBCommand {
         List<String> paramsStrList = request.getParamsStrList();
         Set<String> result = Sets.newHashSet();
         for (int i = 0; i < paramsStrList.size(); i++) {
-            Set<String> removeSet = db.getDict().getOrDefault(
-                    DictKey.safeKey(paramsStrList.get(0)), DictValue.EMPTY_SET).getSet();
+            Set<String> removeSet = db.lookupKeyOrDefault(paramsStrList.get(i),
+                    DictValue.EMPTY_SET).getSet();
             result.addAll(removeSet);
         }
         return RedisMessageUtils.toRedisMessage(result);
