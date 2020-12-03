@@ -6,7 +6,7 @@ package com.daicy.redis.persistence;
 
 
 import com.daicy.redis.persistence.utils.ByteUtils;
-import com.daicy.redis.persistence.utils.CRC64;
+import com.daicy.redis.persistence.utils.CRC64Redis;
 import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.DictKey;
 import com.daicy.redis.storage.DictValue;
@@ -34,7 +34,7 @@ public class RDBOutputStream {
     private final CheckedOutputStream out;
 
     public RDBOutputStream(OutputStream out) {
-        this.out = new CheckedOutputStream(requireNonNull(out), new CRC64());
+        this.out = new CheckedOutputStream(requireNonNull(out), new CRC64Redis());
     }
 
     public void preamble(int version) throws IOException {

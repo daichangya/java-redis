@@ -111,7 +111,7 @@ import static java.util.stream.Collectors.toMap;
  * pubsub_patterns:0
  * latest_fork_usec:307
  * <p>
- * # Replication
+ * # ReplicationManager
  * role:master
  * connected_slaves:0
  * master_repl_offset:0

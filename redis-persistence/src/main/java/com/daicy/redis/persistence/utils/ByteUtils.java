@@ -32,6 +32,15 @@ public class ByteUtils {
         ((long)(array[1] & 0xFF)) << 48 |
         ((long)(array[0] & 0xFF)) << 56;
   }
+//
+//  public static long readLong(byte[] array){
+//    long r = 0;
+//    for (int i = 0; i < array.length; ++i) {
+//      final long v = array[i]& 0xFF;
+//      r |= (v << (i << 3));
+//    }
+//    return r;
+//  }
 
   public static int byteArrayToInt(byte[] array) {
     return array[3] & 0xFF |

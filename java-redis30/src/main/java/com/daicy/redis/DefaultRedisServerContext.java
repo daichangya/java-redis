@@ -3,6 +3,7 @@ package com.daicy.redis;
 import com.daicy.redis.command.DBCommandSuite;
 import com.daicy.redis.command.RedisCommand;
 import com.daicy.redis.context.RedisServerContext;
+import com.daicy.redis.protocal.MultiBulkRedisMessage;
 import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.storage.DictFactory;
 import com.daicy.redis.storage.RedisDb;
@@ -10,11 +11,10 @@ import com.daicy.remoting.transport.netty4.AbstractServerContext;
 import com.daicy.remoting.transport.netty4.ClientSession;
 import io.netty.channel.Channel;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 import static com.daicy.redis.RedisConstants.REDIS_REPL_NONE;
@@ -33,12 +33,14 @@ public class DefaultRedisServerContext extends AbstractServerContext implements 
 
     private RedisClientSession master;
 
+    private SlaveRedisClient slaveRedisClient;
+
     private String masterhost;
 
     private String masterport;
 
     // 复制的状态（服务器是从服务器时使用）
-    private int repl_state = REDIS_REPL_NONE;          /* Replication status if the instance is a slave */
+    private volatile int repl_state = REDIS_REPL_NONE;          /* ReplicationManager status if the instance is a slave */
 
     private final DBCommandSuite commands = new DBCommandSuite();
 
@@ -82,8 +84,11 @@ public class DefaultRedisServerContext extends AbstractServerContext implements 
         }
     }
 
-    private void initFactory() {
+    public void initFactory() {
         DictFactory factory = ServiceLoaderUtils.loadService(DictFactory.class);
+        for (int i = 0; i < databases.size(); i++) {
+            databases.remove(i);
+        }
         for (int i = 0; i < dbConfig.getNumDatabases(); i++) {
             RedisDb redisDb = new RedisDb();
             redisDb.setDict(factory.create());
@@ -127,9 +132,17 @@ public class DefaultRedisServerContext extends AbstractServerContext implements 
     private void propagate(Request request) {
         if (!isReadOnlyCommand(request.getCommand())) {
             persistenceManager.append(request);
-            Replication.replicationFeedSlaves(request);
+            ReplicationManager.replicationFeedSlaves(request);
         }
     }
+
+
+    public void processCommand(RedisMessage redisMessage) {
+        if (null != persistenceManager) {
+            persistenceManager.processCommand(redisMessage);
+        }
+    }
+
 
     public void exportRDBBg() {
         if (null != persistenceManager) {
@@ -138,7 +151,13 @@ public class DefaultRedisServerContext extends AbstractServerContext implements 
     }
 
 
-    public void exportRDB() throws IOException {
+    public void importRDB(File file) {
+        if (null != persistenceManager) {
+            persistenceManager.importRDB(file);
+        }
+    }
+
+    public void exportRDB() {
         if (null != persistenceManager) {
             persistenceManager.exportRDB();
         }
@@ -198,5 +217,17 @@ public class DefaultRedisServerContext extends AbstractServerContext implements 
 
     public void setRepl_state(int repl_state) {
         this.repl_state = repl_state;
+    }
+
+    public DBConfig getDbConfig() {
+        return dbConfig;
+    }
+
+    public SlaveRedisClient getSlaveRedisClient() {
+        return slaveRedisClient;
+    }
+
+    public void setSlaveRedisClient(SlaveRedisClient slaveRedisClient) {
+        this.slaveRedisClient = slaveRedisClient;
     }
 }

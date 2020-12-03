@@ -4,6 +4,10 @@ com.daicy.redis.command.db.SelectCommand
 com.daicy.redis.command.db.DbSizeCommand
 com.daicy.redis.command.db.FlushDBCommand
 com.daicy.redis.command.db.InfoCommand
+com.daicy.redis.command.db.BgSaveCommand
+com.daicy.redis.command.db.SaveCommand
+com.daicy.redis.command.db.SlaveOfCommand
+com.daicy.redis.command.db.SyncCommand
 com.daicy.redis.command.key.DeleteCommand
 com.daicy.redis.command.key.ExpireCommand
 com.daicy.redis.command.key.PExpireCommand

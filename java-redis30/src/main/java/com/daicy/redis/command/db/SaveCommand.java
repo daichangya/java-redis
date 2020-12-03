@@ -27,7 +27,7 @@ public class SaveCommand implements DBCommand {
                 return new ErrorRedisMessage("Background save already in progress");
             }
             request.getServerContext().exportRDB();
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOGGER.error("save error", e);
             return ERR;
         }

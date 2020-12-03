@@ -47,5 +47,4 @@ public class RedisConstants {
 
     public static int REDIS_REPL_CONNECTED = 5;
 
-
 }

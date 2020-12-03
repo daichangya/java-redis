@@ -16,7 +16,7 @@
         <module>redis-jmh</module>
         <module>remoting-netty4</module>
         <module>redis-storage</module>
-        <module>rediso-original</module>
+        <module>redis-original</module>
         <module>redis-persistence</module>
         <module>redis-context</module>
         <module>persistence-colletions</module>
@@ -130,6 +130,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.7.0</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -138,6 +139,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>

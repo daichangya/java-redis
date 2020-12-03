@@ -56,7 +56,7 @@ public class PersistenceManager {
     }
 
     public void start() {
-        importRDB();
+        importRDB(new File(dumpFile));
         importRedo();
         createRedo();
         executor.scheduleWithFixedDelay(this::run, syncPeriod, syncPeriod, TimeUnit.SECONDS);
@@ -72,19 +72,20 @@ public class PersistenceManager {
 
     void run() {
         exportRDB();
-        rdbToSlave();
         createRedo();
-//        RedisClient2 redisClient
-        Request request = new DefaultRequest("PING", null, null, redisServerContext);
-        Replication.replicationFeedSlaves(request);
     }
 
 
-    private void importRDB() {
-        File file = new File(dumpFile);
+    public void importRDB(File file) {
         if (file.exists()) {
             try (InputStream fileInputStream = new FileInputStream(file)) {
                 RDBInputStream rdb = new RDBInputStream(fileInputStream);
+//                try {
+//                    byte[] bytes1024 = rdb.read(5);
+//                    System.out.println(bytes1024);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
                 rdb.parse(redisServerContext.getDatabases());
                 LOGGER.info("RDB file imported");
             } catch (IOException e) {
@@ -125,7 +126,7 @@ public class PersistenceManager {
         }
     }
 
-    private void processCommand(RedisMessage redisMessage) {
+    public void processCommand(RedisMessage redisMessage) {
         Request request = toRequest((MultiBulkRedisMessage) redisMessage, redisServerContext);
         RedisCommand redisCommand = redisServerContext.getRedisCommand(request.getCommand());
         RedisMessage reply = redisCommand.execute(request);
@@ -197,6 +198,7 @@ public class PersistenceManager {
             tempFile.renameTo(new File(dumpFile));
             redisServerContext.setRdbIng(false);
             LOGGER.info("RDB file exported");
+            rdbToSlave();
         } catch (IOException e) {
             LOGGER.error("error writing to RDB file", e);
         } finally {
@@ -215,8 +217,10 @@ public class PersistenceManager {
                 RedisClientSession redisClientSession = (RedisClientSession) clientSession;
                 if (redisClientSession.getReplstate() == REDIS_REPL_WAIT_BGSAVE_END) {
                     redisClientSession.setReplstate(REDIS_REPL_SEND_BULK);
-                    redisClientSession.getChannel().writeAndFlush(
+                    redisClientSession.getChannel().write(String.format("$%s\r\n",length));
+                    redisClientSession.getChannel().write(
                             new DefaultFileRegion(raf.getChannel(), 0, length));
+                    redisClientSession.getChannel().writeAndFlush("\r\n");
                     redisClientSession.setReplstate(REDIS_REPL_ONLINE);
                 }
 

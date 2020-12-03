@@ -8,7 +8,7 @@ public class DBConfig {
 
   private static final int DEFAULT_SYNC_PERIOD = 60;
   private static final int DEFAULT_CLEAN_PERIOD = 30;
-  private static final int DEFAULT_DATABASES = 10;
+  private static final int DEFAULT_DATABASES = 16;
   private static final String DUMP_FILE = "dump.rdb";
   private static final String REDO_FILE = "appendonly.aof";
 

@@ -1,5 +1,6 @@
 package com.daicy.redis.client;
 
+import com.daicy.redis.client.utils.ByteBufUtils;
 import com.daicy.redis.protocal.MultiBulkRedisMessage;
 import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.remoting.transport.netty4.client.ClientPromise;
@@ -17,16 +18,35 @@ import static java.util.stream.Collectors.toList;
 public class RedisClientTest {
 
     @Test
-    public void start() throws Exception {
+    public void testKeys() throws Exception {
+        System.out.println(String.format("$%s\r\n",88));
         RedisClient redisClient = new RedisClient();
-        String[] commands = "keys *".split("\\s+");
-        com.daicy.redis.protocal.RedisMessage redisMessage =
-                new MultiBulkRedisMessage(asList(commands).stream().map(com.daicy.redis.protocal.RedisMessage::string).collect(toList()));
-        ClientPromise<RedisMessage> promise = redisClient.send(redisMessage,-1);
+        ClientPromise<RedisMessage> promise = redisClient.sendMessage("set daicy 88");
         System.out.println(new String(promise.get().encode()));
 
-        Thread.sleep(10000);
+        promise = redisClient.sendMessage("get daicy");
+        System.out.println(new String(promise.get().encode()));
+        redisClient.shutdown();
     }
 
+    @Test
+    public void testPsync() throws Exception {
+        System.out.println(String.format("$%s\r\n",88));
+        RedisClient redisClient = new RedisClient();
+        ClientPromise<RedisMessage> promise = redisClient.sendMessage("PSYNC ? -1");
+        System.out.println(new String(promise.get().encode()));
+
+        redisClient.shutdown();
+        Thread.sleep(1000000);
+    }
+
+    @Test
+    public void testSync() throws Exception {
+        System.out.println(String.format("$%s\r\n",88));
+        RedisClient redisClient = new RedisClient();
+        ClientPromise<RedisMessage> promise = redisClient.send("sync",ByteBufUtils.toByteBuf("sync\r\n"),99999);
+        System.out.println(new String(promise.get().encode()));
+        redisClient.shutdown();
+    }
 
 }

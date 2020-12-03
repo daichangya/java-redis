@@ -60,6 +60,13 @@ public class ReplyEncoder extends MessageToMessageEncoder<RedisMessage> {
             } else {
                 out.add(new FullBulkStringRedisMessage(ByteBufUtils.toByteBuf(((BulkRedisMessage) reply).data())));
             }
+        } else if (reply instanceof BulkByteRedisMessage) {
+            BulkByteRedisMessage bulkReply = (BulkByteRedisMessage) reply;
+            if (null == bulkReply.data()) {
+                out.add(FullBulkStringRedisMessage.NULL_INSTANCE);
+            } else {
+                out.add(new FullBulkStringRedisMessage(ByteBufUtils.toByteBuf(((BulkRedisMessage) reply).encode())));
+            }
         } else if (reply instanceof MultiBulkRedisMessage) {
             MultiBulkRedisMessage multiBulkReply = (MultiBulkRedisMessage) reply;
             if (null == multiBulkReply.data()) {

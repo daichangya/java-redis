@@ -23,6 +23,7 @@ import io.netty.util.TimerTask;
 import io.netty.util.concurrent.ScheduledFuture;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Arrays.asList;
@@ -35,20 +36,31 @@ import static java.util.stream.Collectors.toList;
  * @date:11/23/20
  */
 @Slf4j
-public class RedisClient implements ClientCallback<RedisMessage> {
+public class RedisClient implements MessageCallback {
 
 
     private final Client client;
 
     public RedisClient() throws Exception {
-        ClientBuilder clientBuilder = (ClientBuilder) ClientBuilder.forHostPort("localhost", 6379)
-                .channelInitializer(new ClientInitializer(this));
+        this(null);
+    }
+
+    public RedisClient(ClientBuilder clientBuilder) throws Exception {
+        if (null == clientBuilder) {
+            clientBuilder = ClientBuilder.forHostPort("localhost", 6379);
+        }
+        clientBuilder.channelInitializer(new ClientInitializer(this));
+        client = start(clientBuilder);
+    }
+
+    private Client start(ClientBuilder clientBuilder) throws InterruptedException, java.util.concurrent.ExecutionException, IOException {
         Client client = clientBuilder.build();
         Runtime.getRuntime().addShutdownHook(new Thread(client::shutdown));
         client.init();
         client.start().get();
-        this.client = client;
+        return client;
     }
+
 
     public Client getClient() {
         return client;
@@ -57,7 +69,7 @@ public class RedisClient implements ClientCallback<RedisMessage> {
     @Override
     public void channel(SocketChannel channel) {
         ChannelPipeline p = channel.pipeline();
-        p.addLast(new RedisDecoder());
+        p.addLast("redisDecoder",new RedisDecoder());
         p.addLast(new RedisBulkStringAggregator());
         p.addLast(new RedisArrayAggregator());
         p.addLast(new ReplyDecoder());
@@ -72,18 +84,22 @@ public class RedisClient implements ClientCallback<RedisMessage> {
         ping();
     }
 
-    private void ping(){
-        client.getClientBuilder().getTimer().newTimeout(new TimerTask() {
-            @Override
-            public void run(Timeout timeout) throws Exception {
-                String[] commands = "ping".split("\\s+");
-                RedisMessage redisMessage =
-                        new MultiBulkRedisMessage(asList(commands).stream().map(RedisMessage::string).collect(toList()));
-                ClientPromise<RedisMessage> promise = send(redisMessage,-1);
-                log.info(new String(promise.get().encode()));
-                ping();
-            }
-        }, 1000, TimeUnit.MILLISECONDS);
+    public void shutdown() {
+        client.shutdown();
+    }
+
+    private void ping() {
+//        client.getClientBuilder().getTimer().newTimeout(new TimerTask() {
+//            @Override
+//            public void run(Timeout timeout) throws Exception {
+//                String[] commands = "ping".split("\\s+");
+//                RedisMessage redisMessage =
+//                        new MultiBulkRedisMessage(asList(commands).stream().map(RedisMessage::string).collect(toList()));
+//                ClientPromise<RedisMessage> promise = send(redisMessage, -1);
+//                log.info(new String(promise.get().encode()));
+//                ping();
+//            }
+//        }, 1000, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -92,8 +108,21 @@ public class RedisClient implements ClientCallback<RedisMessage> {
         System.out.println("disconnected! 88");
     }
 
+    @Override
+    public void onMessage(RedisMessage redisMessage) {
+        System.out.println(new String(redisMessage.encode()));
+    }
 
-    public ClientPromise send(RedisMessage redisMessage, long timeout) {
+    public <T> ClientPromise sendMessage(String message){
+        String[] commands = message.split("\\s+");
+        com.daicy.redis.protocal.RedisMessage redisMessage =
+                new MultiBulkRedisMessage(asList(commands).stream().map(com.daicy.redis.protocal.RedisMessage::string).collect(toList()));
+        ClientPromise promise = send(commands[0],redisMessage,999999);
+        return promise;
+    }
+
+
+    public <T> ClientPromise send(String commandName,T redisMessage, long timeout) {
         ClientPromise promise = new ClientPromise();
         if (timeout == -1) {
             timeout = client.getClientBuilder().getSessionTimeout();
@@ -108,7 +137,7 @@ public class RedisClient implements ClientCallback<RedisMessage> {
             @Override
             public void run() {
                 RedisException ex = new RedisException("Command execution timeout for command: "
-                        + new String(redisMessage.encode())
+                        + redisMessage
                         + ", Redis client: " + client.getClientBuilder().getHost());
                 promise.tryFailure(ex);
             }
@@ -118,7 +147,7 @@ public class RedisClient implements ClientCallback<RedisMessage> {
             scheduledFuture.cancel(false);
         });
 
-        ChannelFuture writeFuture = send(new RedisCommand(redisMessage, promise));
+        ChannelFuture writeFuture = send(new RedisCommand(commandName,redisMessage, promise));
         writeFuture.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {

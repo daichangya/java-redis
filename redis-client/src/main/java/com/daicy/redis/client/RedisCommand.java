@@ -9,29 +9,29 @@ import com.daicy.remoting.transport.netty4.client.ClientPromise;
  * @description: com.daicy.remoting.transport.netty4.redisclient
  * @date:11/25/20
  */
-public class RedisCommand {
-    private RedisMessage redisMessage;
+public class RedisCommand<T> {
+    private final T redisMessage;
 
-    private ClientPromise clientPromise;
+    private final String commandName;
 
-    public RedisCommand(RedisMessage redisMessage, ClientPromise clientPromise) {
+    private final ClientPromise clientPromise;
+
+    public RedisCommand(String commandName, T redisMessage, ClientPromise clientPromise) {
         this.redisMessage = redisMessage;
+        this.commandName = commandName.toLowerCase();
         this.clientPromise = clientPromise;
     }
 
-    public RedisMessage getRedisMessage() {
+    public T getRedisMessage() {
         return redisMessage;
-    }
-
-    public void setRedisMessage(RedisMessage redisMessage) {
-        this.redisMessage = redisMessage;
     }
 
     public ClientPromise getClientPromise() {
         return clientPromise;
     }
 
-    public void setClientPromise(ClientPromise clientPromise) {
-        this.clientPromise = clientPromise;
+
+    public String getCommandName() {
+        return commandName;
     }
 }
