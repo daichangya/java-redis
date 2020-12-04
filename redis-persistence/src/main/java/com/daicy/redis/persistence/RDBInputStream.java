@@ -282,11 +282,12 @@ public class RDBInputStream {
     private byte[] readSpecialStringEncoded(int type) throws IOException {
         switch (type) {
             case REDIS_RDB_ENC_INT8:
-                return ByteUtils.readInt(read(1),false).toString().getBytes();
+                return ByteUtils.readInt(read(1),true).toString().getBytes();
             case REDIS_RDB_ENC_INT16:
-                return ByteUtils.readInt(read(2),false).toString().getBytes();
+                byte[] bytes = read(2);
+                return ByteUtils.readInt(bytes,true).toString().getBytes();
             case REDIS_RDB_ENC_INT32:
-                return ByteUtils.readInt(read(4),false).toString().getBytes();
+                return ByteUtils.readInt(read(4),true).toString().getBytes();
             case REDIS_RDB_ENC_LZF:
 //                return readLzfString();
             default:

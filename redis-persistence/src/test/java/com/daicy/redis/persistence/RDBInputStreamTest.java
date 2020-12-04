@@ -44,7 +44,7 @@ public class RDBInputStreamTest {
     @Test
     public void parse() {
         initFactory();
-        File file = new File("dump.rdb");
+        File file = new File("temp-0.rdb");
         try (InputStream fileInputStream = new FileInputStream(file)) {
             RDBInputStream rdb = new RDBInputStream(fileInputStream);
 //            byte[] bytes1024 = new byte[10];
