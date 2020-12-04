@@ -9,11 +9,13 @@ import com.daicy.redis.storage.DictFactory;
 import com.daicy.redis.storage.RedisDb;
 import com.daicy.remoting.transport.netty4.AbstractServerContext;
 import com.daicy.remoting.transport.netty4.ClientSession;
+import com.google.common.collect.Maps;
 import io.netty.channel.Channel;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 import static com.daicy.redis.RedisConstants.REDIS_REPL_NONE;
@@ -44,6 +46,8 @@ public class DefaultRedisServerContext extends AbstractServerContext implements 
     private final DBCommandSuite commands = new DBCommandSuite();
 
     private final List<RedisDb> databases = new ArrayList<>();
+
+    private Map<String,String> luaScripts = Maps.newHashMap();
 
     private PersistenceManager persistenceManager;
 
@@ -229,5 +233,13 @@ public class DefaultRedisServerContext extends AbstractServerContext implements 
 
     public void setSlaveRedisClient(SlaveRedisClient slaveRedisClient) {
         this.slaveRedisClient = slaveRedisClient;
+    }
+
+    public Map<String, String> getLuaScripts() {
+        return luaScripts;
+    }
+
+    public void setLuaScripts(Map<String, String> luaScripts) {
+        this.luaScripts = luaScripts;
     }
 }
