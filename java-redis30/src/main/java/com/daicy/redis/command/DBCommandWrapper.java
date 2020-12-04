@@ -9,8 +9,11 @@ import com.daicy.redis.Request;
 import com.daicy.redis.annotation.*;
 import com.daicy.redis.protocal.ErrorRedisMessage;
 import com.daicy.redis.protocal.RedisMessage;
+import com.daicy.redis.protocal.StatusRedisMessage;
 import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.RedisDb;
+
+import static com.daicy.redis.RedisConstants.REDIS_MULTI;
 
 public class DBCommandWrapper implements RedisCommand {
 
@@ -58,6 +61,9 @@ public class DBCommandWrapper implements RedisCommand {
                 request.getClientSession().getDictNum());
         if (request.getLength() < params) {
             return new ErrorRedisMessage("ERR wrong number of arguments for '" + request.getCommand() + "' command");
+        } else if (isTxActive(request) && !txIgnore) {
+            enqueueRequest(request);
+            return new StatusRedisMessage("QUEUED");
         }
         if (command instanceof DBCommand) {
             return executeDBCommand(db, request);
@@ -75,4 +81,11 @@ public class DBCommandWrapper implements RedisCommand {
         return ((DBCommand) command).execute(db, request);
     }
 
+    private boolean isTxActive(Request request) {
+        return (request.getClientSession().getFlags() & REDIS_MULTI) > 0;
+    }
+
+    private void enqueueRequest(Request request) {
+        request.getClientSession().getMultiState().enqueue(request);
+    }
 }

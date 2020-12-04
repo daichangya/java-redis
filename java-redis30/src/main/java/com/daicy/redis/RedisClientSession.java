@@ -1,5 +1,6 @@
 package com.daicy.redis;
 
+import com.daicy.redis.command.transaction.MultiState;
 import com.daicy.remoting.transport.netty4.ClientSession;
 import io.netty.channel.Channel;
 
@@ -12,6 +13,11 @@ import io.netty.channel.Channel;
 public class RedisClientSession extends ClientSession {
 
     private volatile int databaseNum = 0;
+
+    // 客户端状态标志
+    private volatile int flags;              /* REDIS_SLAVE | REDIS_MONITOR | REDIS_MULTI ... */
+
+    private MultiState multiState;
 
     // 复制状态
     private volatile int replstate;          /* replication state if this is a slave */
@@ -34,6 +40,22 @@ public class RedisClientSession extends ClientSession {
 
     public void setDictNum(int databaseNum) {
         this.databaseNum = databaseNum;
+    }
+
+    public MultiState getMultiState() {
+        return multiState;
+    }
+
+    public void setMultiState(MultiState multiState) {
+        this.multiState = multiState;
+    }
+
+    public int getFlags() {
+        return flags;
+    }
+
+    public void setFlags(int flags) {
+        this.flags = flags;
     }
 }
 //
