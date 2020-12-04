@@ -19,6 +19,7 @@ import static com.daicy.redis.storage.DictValue.*;
 import static java.util.Objects.requireNonNull;
 
 /**
+ * https://github.com/leonchen83/redis-replicator/wiki/RDB-dump-data-format
  * @author daichangya
  */
 public class RDBInputStream {
