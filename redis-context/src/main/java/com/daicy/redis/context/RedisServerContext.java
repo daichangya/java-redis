@@ -11,6 +11,12 @@ import com.daicy.redis.storage.RedisDb;
  */
 public interface RedisServerContext {
 
+    public static RedisServerContext getInstance(){
+        return null;
+    }
+
     public RedisDb getRedisDb(int id);
+
+    public DBConfig getDbConfig();
 
 }

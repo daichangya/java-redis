@@ -7,6 +7,7 @@ import com.daicy.redis.storage.DictValue;
 import com.daicy.redis.storage.RedisDb;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
+import com.ning.compress.lzf.LZFDecoder;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -288,10 +289,20 @@ public class RDBInputStream {
             case REDIS_RDB_ENC_INT32:
                 return ByteUtils.readInt(read(4),true).toString().getBytes();
             case REDIS_RDB_ENC_LZF:
-//                return readLzfString();
+                return readLzfString();
             default:
                 throw new IllegalStateException("Unknown special encoding: " + type);
         }
+    }
+
+
+    private byte[] readLzfString() throws IOException {
+        int clen = rdbLoadLen().len;
+        int ulen = rdbLoadLen().len;
+        byte[] src = read(clen);
+        byte[] dest = new byte[ulen];
+        LZFDecoder.decode(src, dest);
+        return dest;
     }
 
     private DictKey readKey() throws IOException {

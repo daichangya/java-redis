@@ -5,6 +5,7 @@
 package com.daicy.redis;
 
 import com.daicy.redis.command.RedisCommand;
+import com.daicy.redis.context.DBConfig;
 import com.daicy.redis.persistence.RDBInputStream;
 import com.daicy.redis.persistence.RDBOutputStream;
 import com.daicy.redis.protocal.*;

@@ -2,8 +2,8 @@ package com.daicy.redis;
 
 import com.daicy.redis.command.DBCommandSuite;
 import com.daicy.redis.command.RedisCommand;
+import com.daicy.redis.context.DBConfig;
 import com.daicy.redis.context.RedisServerContext;
-import com.daicy.redis.protocal.MultiBulkRedisMessage;
 import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.storage.DictFactory;
 import com.daicy.redis.storage.RedisDb;
@@ -12,7 +12,6 @@ import com.daicy.remoting.transport.netty4.ClientSession;
 import io.netty.channel.Channel;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -219,6 +218,7 @@ public class DefaultRedisServerContext extends AbstractServerContext implements 
         this.repl_state = repl_state;
     }
 
+    @Override
     public DBConfig getDbConfig() {
         return dbConfig;
     }

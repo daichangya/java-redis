@@ -13,6 +13,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.ning</groupId>
+            <artifactId>compress-lzf</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+        <dependency>
             <groupId>com.daicy</groupId>
             <artifactId>redis-storage</artifactId>
             <version>1.0-SNAPSHOT</version>

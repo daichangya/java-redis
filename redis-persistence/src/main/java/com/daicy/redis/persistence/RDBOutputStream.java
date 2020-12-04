@@ -1,6 +1,7 @@
 package com.daicy.redis.persistence;
 
 
+import com.daicy.redis.context.DBConfig;
 import com.daicy.redis.persistence.utils.ByteUtils;
 import com.daicy.redis.persistence.utils.CRC64Redis;
 import com.daicy.redis.persistence.utils.NumberUtils;
@@ -8,6 +9,7 @@ import com.daicy.redis.storage.DataType;
 import com.daicy.redis.storage.DictKey;
 import com.daicy.redis.storage.DictValue;
 import com.google.common.primitives.Ints;
+import com.ning.compress.lzf.LZFEncoder;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -213,16 +215,58 @@ public class RDBOutputStream {
 
     private void string(String value) throws IOException {
         byte[] bytes = value.getBytes();
-        if (bytes.length <= 11) {
+        int length = bytes.length;
+        if (length <= 11) {
             Integer intValue = NumberUtils.toInt(value, null);
             if (null != intValue && StringUtils.equals(value, intValue.toString())) {
                 rdbEncodeInteger(intValue);
                 return;
             }
         }
-        rdbSaveLen(bytes.length);
+
+        /* Try LZF compression - under 20 bytes it's unable to compress even
+         * aaaaaaaaaaaaaaaaaa so skip it
+         *
+         * 如果字符串长度大于 20 ，并且服务器开启了 LZF 压缩，
+         * 那么在保存字符串到数据库之前，先对字符串进行 LZF 压缩。
+         */
+        if (DBConfig.rdb_compression && length > 20) {
+
+            rdbSaveLzfStringObject(bytes);
+            return;
+            /* Return value of 0 means data can't be compressed, save the old way */
+        }
+
+        rdbSaveLen(length);
         out.write(bytes);
     }
+
+
+    /*
+     * 尝试对输入字符串 s 进行压缩，
+     * 如果压缩成功，那么将压缩后的字符串保存到 rdb 中。
+     *
+     * 函数在成功时返回保存压缩后的 s 所需的字节数，
+     * 压缩失败或者内存不足时返回 0 ，
+     * 写入失败时返回 -1 。
+     */
+   private void rdbSaveLzfStringObject(byte[] bytes) throws IOException {
+       int length = bytes.length;
+       byte[] outbytes = LZFEncoder.encode(bytes);
+
+        /* Data compressed! Let's save it on disk
+         *
+         * 保存压缩后的字符串到 rdb 。
+         */
+
+        // 写入类型，说明这是一个 LZF 压缩字符串
+        int type = (REDIS_RDB_ENCVAL<<6)|REDIS_RDB_ENC_LZF;
+        out.write(type);
+        rdbSaveLen(outbytes.length);
+        rdbSaveLen(length);
+        out.write(outbytes);
+    }
+
 
     private void string(double value) throws IOException {
         string(String.valueOf(value));

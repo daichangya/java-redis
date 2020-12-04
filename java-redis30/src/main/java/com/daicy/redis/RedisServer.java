@@ -1,5 +1,6 @@
 package com.daicy.redis;
 
+import com.daicy.redis.context.DBConfig;
 import com.daicy.redis.handler.RedisServerInitializer;
 import com.daicy.remoting.transport.netty4.Server;
 import com.daicy.remoting.transport.netty4.ServerBuilder;
