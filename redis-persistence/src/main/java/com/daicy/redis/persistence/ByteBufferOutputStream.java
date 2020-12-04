@@ -1,12 +1,11 @@
-/*
- * Copyright (c) 2015-2020, Antonio Gabriel Muñoz Conejo <antoniogmc at gmail dot com>
- * Distributed under the terms of the MIT License
- */
 package com.daicy.redis.persistence;
 
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
+/**
+ * @author daichangya
+ */
 public class ByteBufferOutputStream extends OutputStream {
 
   private static final int DEFAULT_CAPACITY = 1024;

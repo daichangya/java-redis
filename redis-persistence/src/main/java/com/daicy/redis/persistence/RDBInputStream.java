@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2015-2020, Antonio Gabriel Muñoz Conejo <antoniogmc at gmail dot com>
- * Distributed under the terms of the MIT License
- */
 package com.daicy.redis.persistence;
 
 import com.daicy.redis.persistence.utils.ByteUtils;
@@ -21,6 +17,9 @@ import static com.daicy.redis.persistence.RdbConstants.*;
 import static com.daicy.redis.storage.DictValue.*;
 import static java.util.Objects.requireNonNull;
 
+/**
+ * @author daichangya
+ */
 public class RDBInputStream {
 
     private static final String REDIS_PREAMBLE = new String("REDIS");

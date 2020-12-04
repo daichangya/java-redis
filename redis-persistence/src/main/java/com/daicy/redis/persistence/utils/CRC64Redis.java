@@ -6,6 +6,9 @@ package com.daicy.redis.persistence.utils;
 
 import java.util.zip.Checksum;
 
+/**
+ * @author daichangya
+ */
 public class CRC64Redis implements Checksum {
 
   private static final long[] LOOKUPTABLE = {
