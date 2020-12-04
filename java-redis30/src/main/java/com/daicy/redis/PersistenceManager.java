@@ -137,7 +137,7 @@ public class PersistenceManager {
             return null;
         }
         List<String> params = multiBulkRedisMessage.data().stream()
-                .map(redisMessage -> ((BulkRedisMessage) redisMessage).data()).collect(Collectors.toList());
+                .map(redisMessage -> ((BulkByteRedisMessage) redisMessage).toString()).collect(Collectors.toList());
         RedisClientSession clientSession = new RedisClientSession("dummy", null);
         return new DefaultRequest(params.get(0), params.subList(1, params.size()), clientSession, redisServerContext);
     }

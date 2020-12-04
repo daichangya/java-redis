@@ -2,6 +2,7 @@ package com.daicy.redis;
 
 import com.daicy.redis.client.RedisClient;
 import com.daicy.redis.client.utils.ByteBufUtils;
+import com.daicy.redis.protocal.BulkByteRedisMessage;
 import com.daicy.redis.protocal.BulkRedisMessage;
 import com.daicy.redis.protocal.MultiBulkRedisMessage;
 import com.daicy.redis.protocal.RedisMessage;
@@ -129,9 +130,9 @@ public class ReplicationManager {
         ClientPromise<RedisMessage> promise = redisServerContext.getSlaveRedisClient()
                 .send("sync", ByteBufUtils.toByteBuf("sync\r\n"),99999);
         try {
-            BulkRedisMessage response = (BulkRedisMessage) promise.get();
-            File file = new File(redisServerContext.getDbConfig().getRdbFile());
-            FileUtils.writeStringToFile(file,
+            BulkByteRedisMessage response = (BulkByteRedisMessage) promise.get();
+            File file = new File("temp-0.rdb");
+            FileUtils.writeByteArrayToFile(file,
                     response.data());
             redisServerContext.initFactory();
             redisServerContext.importRDB(file);

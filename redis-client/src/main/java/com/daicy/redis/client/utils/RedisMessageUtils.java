@@ -1,7 +1,7 @@
 package com.daicy.redis.client.utils;
 
 import com.daicy.redis.client.codec.StringCodec;
-import com.daicy.redis.protocal.BulkRedisMessage;
+import com.daicy.redis.protocal.BulkByteRedisMessage;
 import com.daicy.redis.protocal.MultiBulkRedisMessage;
 import io.netty.handler.codec.redis.AbstractStringRedisMessage;
 import io.netty.handler.codec.redis.ArrayRedisMessage;
@@ -37,14 +37,28 @@ public class RedisMessageUtils {
         }
     }
 
+    public static byte[] toByte(RedisMessage redisMessage) {
+        if (null == redisMessage) {
+            return null;
+        }
+
+        if (redisMessage instanceof AbstractStringRedisMessage) {
+            return ((AbstractStringRedisMessage) redisMessage).content().getBytes();
+        } else if (redisMessage instanceof BulkStringRedisContent) {
+            return ByteBufUtils.getBytes(((BulkStringRedisContent) redisMessage).content());
+        } else {
+            return redisMessage.toString().getBytes();
+        }
+    }
+
     public static MultiBulkRedisMessage toMultiBulkRedisMessage(ArrayRedisMessage arrayRedisMessage) {
         if (null == arrayRedisMessage || CollectionUtils.isEmpty(arrayRedisMessage.children())) {
             return new MultiBulkRedisMessage(null);
         }
 
         List<com.daicy.redis.protocal.RedisMessage> messageList =
-                arrayRedisMessage.children().stream().map(param -> RedisMessageUtils.toString(param))
-                        .map(paramStr -> new BulkRedisMessage(paramStr))
+                arrayRedisMessage.children().stream().map(param -> RedisMessageUtils.toByte(param))
+                        .map(paramStr -> new BulkByteRedisMessage(paramStr))
                         .collect(Collectors.toList());
         return new MultiBulkRedisMessage(messageList);
     }
@@ -55,7 +69,7 @@ public class RedisMessageUtils {
             return new MultiBulkRedisMessage(null);
         }
         List<com.daicy.redis.protocal.RedisMessage> bulkReplayList =
-                values.stream().map(value -> new BulkRedisMessage(value)).collect(Collectors.toList());
+                values.stream().map(value -> new BulkByteRedisMessage(value.getBytes())).collect(Collectors.toList());
         return new MultiBulkRedisMessage(bulkReplayList);
     }
 }

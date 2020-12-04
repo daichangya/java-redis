@@ -3,6 +3,8 @@ package com.daicy.redis.persistence;
 import com.daicy.redis.storage.DictFactory;
 import com.daicy.redis.storage.OnHeapDictFactory;
 import com.daicy.redis.storage.RedisDb;
+import com.google.common.primitives.Ints;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.junit.Test;
 
 import java.io.File;
@@ -11,6 +13,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.daicy.redis.persistence.RdbConstants.*;
 
 /**
  * @author: create by daichangya
@@ -48,6 +52,21 @@ public class RDBInputStreamTest {
 //            System.out.println(CRC64AB.digest(bytes1024));
             rdb.parse(databases);
         } catch (IOException e) {
+            System.out.println(e);
         }
+    }
+
+    @Test
+    public void testZZ(){
+        System.out.println((REDIS_RDB_ENCVAL<<6));
+        System.out.println((REDIS_RDB_ENCVAL<<6)|REDIS_RDB_ENC_INT8);
+        System.out.println((REDIS_RDB_ENCVAL<<6)|REDIS_RDB_ENC_INT16);
+        System.out.println((1<<31)-1);
+        System.out.println(Integer.MAX_VALUE);
+        System.out.println(Ints.stringConverter().convert("-55"));
+        System.out.println(NumberUtils.toInt("666"));
+        System.out.println("-55".toString());
+
+
     }
 }

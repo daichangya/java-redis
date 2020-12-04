@@ -34,4 +34,12 @@ public class BulkByteRedisMessage extends AbstractRedisMessage<byte[]> {
         return CoreConstants.DOLLAR;
     }
 
+    @Override
+    public String toString() {
+        if (data() != null) {
+            return new String(data());
+        }else {
+            return null;
+        }
+    }
 }

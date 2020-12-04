@@ -53,19 +53,19 @@ public class ReplyEncoder extends MessageToMessageEncoder<RedisMessage> {
             out.add(new io.netty.handler.codec.redis.ErrorRedisMessage(((ErrorRedisMessage) reply).data()));
         } else if (reply instanceof IntegerRedisMessage) {
             out.add(new io.netty.handler.codec.redis.IntegerRedisMessage(((IntegerRedisMessage) reply).data()));
-        } else if (reply instanceof BulkRedisMessage) {
-            BulkRedisMessage bulkReply = (BulkRedisMessage) reply;
+        } else if (reply instanceof BulkByteRedisMessage) {
+            BulkByteRedisMessage bulkReply = (BulkByteRedisMessage) reply;
             if (null == bulkReply.data()) {
                 out.add(FullBulkStringRedisMessage.NULL_INSTANCE);
             } else {
-                out.add(new FullBulkStringRedisMessage(ByteBufUtils.toByteBuf(((BulkRedisMessage) reply).data())));
+                out.add(new FullBulkStringRedisMessage(ByteBufUtils.toByteBuf(bulkReply.data())));
             }
         } else if (reply instanceof BulkByteRedisMessage) {
             BulkByteRedisMessage bulkReply = (BulkByteRedisMessage) reply;
             if (null == bulkReply.data()) {
                 out.add(FullBulkStringRedisMessage.NULL_INSTANCE);
             } else {
-                out.add(new FullBulkStringRedisMessage(ByteBufUtils.toByteBuf(((BulkRedisMessage) reply).encode())));
+                out.add(new FullBulkStringRedisMessage(ByteBufUtils.toByteBuf(bulkReply.encode())));
             }
         } else if (reply instanceof MultiBulkRedisMessage) {
             MultiBulkRedisMessage multiBulkReply = (MultiBulkRedisMessage) reply;
@@ -73,7 +73,7 @@ public class ReplyEncoder extends MessageToMessageEncoder<RedisMessage> {
                 out.add(ArrayRedisMessage.NULL_INSTANCE);
             } else {
                 ArrayRedisMessage arrayRedisMessage = new ArrayRedisMessage(multiBulkReply.data().stream().map(
-                        entry -> new FullBulkStringRedisMessage(ByteBufUtils.toByteBuf(((BulkRedisMessage) entry).data()))).collect(Collectors.toList()));
+                        entry -> new FullBulkStringRedisMessage(ByteBufUtils.toByteBuf(((BulkByteRedisMessage) entry).data()))).collect(Collectors.toList()));
                 out.add(arrayRedisMessage);
             }
         } else {

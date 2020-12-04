@@ -15,6 +15,7 @@
 
 package com.daicy.redis.client.codec;
 
+import com.daicy.redis.client.utils.ByteBufUtils;
 import com.daicy.redis.client.utils.RedisMessageUtils;
 import com.daicy.redis.protocal.ErrorRedisMessage;
 import com.daicy.redis.protocal.IntegerRedisMessage;
@@ -59,10 +60,11 @@ public class ReplyDecoder extends MessageToMessageDecoder<io.netty.handler.codec
         } else if (msg instanceof io.netty.handler.codec.redis.IntegerRedisMessage) {
             out.add(new IntegerRedisMessage((int) ((io.netty.handler.codec.redis.IntegerRedisMessage) msg).value()));
         } else if (msg instanceof FullBulkStringRedisMessage) {
-            if (((FullBulkStringRedisMessage) msg).isNull()) {
+            FullBulkStringRedisMessage fullBulkStringRedisMessage = (FullBulkStringRedisMessage) msg;
+            if (fullBulkStringRedisMessage.isNull()) {
                 out.add(NULL);
             } else {
-                out.add(RedisMessage.string(((FullBulkStringRedisMessage) msg).content().toString(CharsetUtil.UTF_8)));
+                out.add(RedisMessage.bytes(ByteBufUtils.getBytes(fullBulkStringRedisMessage.content())));
             }
         } else if (msg instanceof ArrayRedisMessage) {
             out.add(RedisMessageUtils.toMultiBulkRedisMessage((ArrayRedisMessage) msg));

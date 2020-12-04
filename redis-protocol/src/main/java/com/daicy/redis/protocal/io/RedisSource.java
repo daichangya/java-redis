@@ -9,4 +9,6 @@ public interface RedisSource {
   int available();
   String readLine(); 
   String readString(int length);
+  byte[] readByte(int length);
+
 }

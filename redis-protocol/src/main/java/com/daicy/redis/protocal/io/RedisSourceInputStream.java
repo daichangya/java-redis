@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
- 
+
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -14,7 +14,7 @@ import static java.util.Objects.requireNonNull;
  * @description: com.daicy.redis.protocal.io
  * @date:11/17/20
  */
-public class RedisSourceInputStream  implements RedisSource {
+public class RedisSourceInputStream implements RedisSource {
 
     private final InputStream input;
 
@@ -62,11 +62,17 @@ public class RedisSourceInputStream  implements RedisSource {
 
     @Override
     public String readString(int size) {
+        byte[] bytes = readByte(size);
+        return null == bytes ? null : new String(bytes);
+    }
+
+    @Override
+    public byte[] readByte(int size) {
         try {
             byte[] buffer = new byte[size + 2];
             int red = input.read(buffer);
             if (red > -1) {
-                return new String(Arrays.copyOf(buffer, buffer.length - 2));
+                return Arrays.copyOf(buffer, buffer.length - 2);
             }
             return null;
         } catch (IOException e) {

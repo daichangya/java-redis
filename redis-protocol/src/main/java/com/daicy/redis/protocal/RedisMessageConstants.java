@@ -35,7 +35,7 @@ public class RedisMessageConstants {
 
     public static final StatusRedisMessage QUIT = new StatusRedisMessage("QUIT");
 
-    public static final BulkRedisMessage NULL = new BulkRedisMessage(null);
+    public static final BulkByteRedisMessage NULL = new BulkByteRedisMessage(null);
 
     public static final ErrorRedisMessage ERR = new ErrorRedisMessage("ERR");
 

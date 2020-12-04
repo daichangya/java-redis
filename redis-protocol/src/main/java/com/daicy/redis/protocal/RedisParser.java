@@ -75,12 +75,12 @@ public class RedisParser implements Iterator<RedisMessage> {
     }
 
     private RedisMessage parseStringToken(String line) {
-        BulkRedisMessage token;
+        BulkByteRedisMessage token;
         int length = Integer.parseInt(line);
         if (length > 0 && length < maxLength) {
-            token = new BulkRedisMessage(source.readString(length));
+            token = new BulkByteRedisMessage(source.readByte(length));
         } else {
-            token = new BulkRedisMessage(null);
+            token = new BulkByteRedisMessage(null);
         }
         return token;
     }

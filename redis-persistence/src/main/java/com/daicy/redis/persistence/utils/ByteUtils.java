@@ -4,48 +4,62 @@
  */
 package com.daicy.redis.persistence.utils;
 
+import com.google.common.primitives.Ints;
+
 public class ByteUtils {
 
-  public static byte[] toByteArray(long value) {
-    byte[] b = new byte[Long.BYTES];
-    for (int i = 0; i < b.length; ++i) {
-      b[i] = (byte) (value >> (Long.BYTES - i - 1 << 3));
+    public static byte[] toByteArray(long value) {
+        byte[] b = new byte[Long.BYTES];
+        for (int i = 0; i < b.length; ++i) {
+            b[i] = (byte) (value >> (Long.BYTES - i - 1 << 3));
+        }
+        return b;
     }
-    return b;
-  }
 
-  public static byte[] toByteArray(int value) {
-    byte[] b = new byte[Integer.BYTES];
-    for (int i = 0; i < b.length; ++i) {
-      b[i] = (byte) (value >> (Integer.BYTES - i - 1 << 3));
+
+    public static Integer readInt(byte[] bytes) {
+        return readInt(bytes, true);
     }
-    return b;
-  }
 
-  public static long byteArrayToLong(byte[] array) {
-    return ((long)array[7] & 0xFF) |
-        ((long)(array[6] & 0xFF)) << 8 |
-        ((long)(array[5] & 0xFF)) << 16 |
-        ((long)(array[4] & 0xFF)) << 24 |
-        ((long)(array[3] & 0xFF)) << 32 |
-        ((long)(array[2] & 0xFF)) << 40 |
-        ((long)(array[1] & 0xFF)) << 48 |
-        ((long)(array[0] & 0xFF)) << 56;
-  }
-//
-//  public static long readLong(byte[] array){
-//    long r = 0;
-//    for (int i = 0; i < array.length; ++i) {
-//      final long v = array[i]& 0xFF;
-//      r |= (v << (i << 3));
-//    }
-//    return r;
-//  }
+    public static Integer readInt(byte[] bytes, boolean littleEndian) {
+        int r = 0;
+        int length = bytes.length;
+        for (int i = 0; i < length; ++i) {
+            final int v = bytes[i] & 0xFF;
+            if (littleEndian) {
+                r |= (v << (i << 3));
+            } else {
+                r = (r << 8) | v;
+            }
+        }
+        int c;
+        return r << (c = (4 - length << 3)) >> c;
+    }
 
-  public static int byteArrayToInt(byte[] array) {
-    return array[3] & 0xFF |
-        (array[2] & 0xFF) << 8 |
-        (array[1] & 0xFF) << 16 |
-        (array[0] & 0xFF) << 24;
-  }
+    public static long readLong(byte[] bytes) {
+        return readLong(bytes, true);
+    }
+
+    public static long readLong(byte[] bytes, boolean littleEndian) {
+        long r = 0;
+        int length = bytes.length;
+        for (int i = 0; i < length; ++i) {
+            final long v =  bytes[i] & 0xFF;
+            if (littleEndian) {
+                r |= (v << (i << 3));
+            } else {
+                r = (r << 8) | v;
+            }
+        }
+        return r;
+    }
+
+
+    public static void main(String[] args) {
+        byte[] bytes = Ints.toByteArray(555);
+        System.out.println(bytes);
+        System.out.println(readInt(bytes,false));
+        System.out.println(readInt(bytes,true));
+
+    }
 }
