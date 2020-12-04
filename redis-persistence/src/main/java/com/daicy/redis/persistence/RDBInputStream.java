@@ -122,7 +122,7 @@ public class RDBInputStream {
         long readed = parseChecksum();
 
         if (calculated != readed) {
-            throw new IOException("invalid checksum: " + readed);
+            throw new IOException(String.format("invalid checksum: %s %s",calculated, readed));
         }
     }
 
