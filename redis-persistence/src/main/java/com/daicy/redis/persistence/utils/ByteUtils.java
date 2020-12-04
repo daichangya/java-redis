@@ -8,10 +8,26 @@ import com.google.common.primitives.Ints;
 
 public class ByteUtils {
 
-    public static byte[] toByteArray(long value) {
+    public static byte[] toByteArray(int value,boolean littleEndian) {
+        byte[] b = new byte[Integer.BYTES];
+        for (int i = 0; i < b.length; ++i) {
+            if(littleEndian){
+                b[i] = (byte) (value >> (i << 3));
+            }else {
+                b[i] = (byte) (value >> (Long.BYTES - i - 1 << 3));
+            }
+        }
+        return b;
+    }
+
+    public static byte[] toByteArray(long value,boolean littleEndian) {
         byte[] b = new byte[Long.BYTES];
         for (int i = 0; i < b.length; ++i) {
-            b[i] = (byte) (value >> (Long.BYTES - i - 1 << 3));
+            if(littleEndian){
+                b[i] = (byte) (value >> (i << 3));
+            }else {
+                b[i] = (byte) (value >> (Long.BYTES - i - 1 << 3));
+            }
         }
         return b;
     }
@@ -29,6 +45,7 @@ public class ByteUtils {
             if (littleEndian) {
                 r |= (v << (i << 3));
             } else {
+//                return b1 << 24 | (b2 & 0xFF) << 16 | (b3 & 0xFF) << 8 | (b4 & 0xFF);
                 r = (r << 8) | v;
             }
         }

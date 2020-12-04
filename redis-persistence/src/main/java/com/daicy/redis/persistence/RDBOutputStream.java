@@ -81,7 +81,7 @@ public class RDBOutputStream {
     private void expiredAt(DictValue expired) throws IOException {
         if (expired != null) {
             out.write(TTL_MILLISECONDS);
-            out.write(ByteUtils.toByteArray(expired.getExpiredAt().toEpochMilli()));
+            out.write(ByteUtils.toByteArray(expired.getExpiredAt().toEpochMilli(),true));
         }
     }
 
@@ -261,7 +261,7 @@ public class RDBOutputStream {
 
     public void end() throws IOException {
         out.write(END_OF_STREAM);
-        out.write(ByteUtils.toByteArray(out.getChecksum().getValue()));
+        out.write(ByteUtils.toByteArray(out.getChecksum().getValue(),true));
         out.flush();
     }
 }
