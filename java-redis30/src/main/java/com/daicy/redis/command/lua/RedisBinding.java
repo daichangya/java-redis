@@ -30,17 +30,17 @@ public class RedisBinding extends VarArgFunction {
     List<String> params = new ArrayList<>();
     if (args.narg() > 1) {
       for (int i = 1; i < args.narg(); i++) {
-        params.add(toSafeString(args.checkstring(i + 1)));
+        params.add(toString(args.checkstring(i + 1)));
       }
     }
     return params.toArray(new String[0]);
   }
 
   private String readCommand(Varargs args) {
-    return toSafeString(args.checkstring(1));
+    return toString(args.checkstring(1));
   }
 
-  private String toSafeString(LuaString value)
+  private String toString(LuaString value)
   {
     return new String(value.m_bytes);
   }
