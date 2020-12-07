@@ -12,8 +12,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @description: com.daicy.remoting.transport.netty4
  * @date:11/11/20
  */
-public abstract class AbstractServerContext implements ServerContext<ClientSession> {
-    private final ConcurrentHashMap<String, ClientSession> clients = new ConcurrentHashMap<>();
+public abstract class AbstractServerContext<T extends ClientSession> implements ServerContext<T> {
+    private final ConcurrentHashMap<String, T> clients = new ConcurrentHashMap<>();
 
     private Server server;
 
@@ -38,7 +38,12 @@ public abstract class AbstractServerContext implements ServerContext<ClientSessi
     }
 
     @Override
-    public ClientSession addClient(ClientSession client) {
+    public T getClient(String sessionId) {
+        return clients.get(sessionId);
+    }
+
+    @Override
+    public T addClient(T client) {
         return clients.putIfAbsent(client.getId(), client);
     }
 
@@ -50,12 +55,12 @@ public abstract class AbstractServerContext implements ServerContext<ClientSessi
 
 
     @Override
-    public ClientSession getClient(Channel channel) {
+    public T getClient(Channel channel) {
         return clients.computeIfAbsent(sourceKey(channel), key -> newSession(channel));
     }
 
-    public ClientSession newSession(Channel channel) {
-        return new ClientSession(sourceKey(channel), channel);
+    public T newSession(Channel channel) {
+        return (T) new ClientSession(sourceKey(channel), channel);
     }
 
     public String sourceKey(Channel channel) {

@@ -13,9 +13,7 @@ import com.google.common.collect.Maps;
 import io.netty.channel.Channel;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 import static com.daicy.redis.RedisConstants.REDIS_REPL_NONE;
@@ -26,9 +24,9 @@ import static com.daicy.redis.RedisConstants.REDIS_REPL_NONE;
  * @description: com.daicy.redis
  * @date:11/11/20
  */
-public class DefaultRedisServerContext extends AbstractServerContext implements RedisServerContext {
+public class DefaultRedisServerContext extends AbstractServerContext<RedisClientSession> implements RedisServerContext {
 
-    private final ConcurrentSkipListSet<ClientSession> slaves = new ConcurrentSkipListSet<>();
+    private final ConcurrentSkipListSet<RedisClientSession> slaves = new ConcurrentSkipListSet<>();
 
     private static DefaultRedisServerContext instance;
 
@@ -43,6 +41,14 @@ public class DefaultRedisServerContext extends AbstractServerContext implements 
     // 复制的状态（服务器是从服务器时使用）
     private volatile int repl_state = REDIS_REPL_NONE;          /* ReplicationManager status if the instance is a slave */
 
+    /* Pubsub */
+    // 字典，键为频道，值为链表
+    // 链表中保存了所有订阅某个频道的客户端
+    // 新客户端总是被添加到链表的表尾
+    private HashMap<String,List<String>> pubsubChannels = new HashMap<>();  /* Map channels to list of subscribed clients */
+
+    private HashMap<String,List<String>> pubsubPatterns = new HashMap<>();
+
     private final DBCommandSuite commands = new DBCommandSuite();
 
     private final List<RedisDb> databases = new ArrayList<>();
@@ -56,7 +62,6 @@ public class DefaultRedisServerContext extends AbstractServerContext implements 
     private volatile boolean isRdbIng = false;
 
     private volatile boolean isAofIng = false;
-
 
     public DefaultRedisServerContext(DBConfig dbConfig) {
         this.dbConfig = dbConfig;
@@ -186,7 +191,7 @@ public class DefaultRedisServerContext extends AbstractServerContext implements 
         isAofIng = aofIng;
     }
 
-    public ConcurrentSkipListSet<ClientSession> getSlaves() {
+    public ConcurrentSkipListSet<RedisClientSession> getSlaves() {
         return slaves;
     }
 
@@ -241,5 +246,21 @@ public class DefaultRedisServerContext extends AbstractServerContext implements 
 
     public void setLuaScripts(Map<String, String> luaScripts) {
         this.luaScripts = luaScripts;
+    }
+
+    public HashMap<String, List<String>> getPubsubChannels() {
+        return pubsubChannels;
+    }
+
+    public void setPubsubChannels(HashMap<String, List<String>> pubsubChannels) {
+        this.pubsubChannels = pubsubChannels;
+    }
+
+    public HashMap<String, List<String>> getPubsubPatterns() {
+        return pubsubPatterns;
+    }
+
+    public void setPubsubPatterns(HashMap<String, List<String>> pubsubPatterns) {
+        this.pubsubPatterns = pubsubPatterns;
     }
 }

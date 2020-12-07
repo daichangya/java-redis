@@ -21,6 +21,8 @@ public interface ServerContext<T> {
 
     Collection<T> getClients();
 
+    T getClient(String sessionId);
+
     T addClient(T client);
 
     boolean delClient(T client);

@@ -69,15 +69,27 @@ public class ReplyEncoder extends MessageToMessageEncoder<RedisMessage> {
             }
         } else if (reply instanceof MultiBulkRedisMessage) {
             MultiBulkRedisMessage multiBulkReply = (MultiBulkRedisMessage) reply;
-            if (null == multiBulkReply.data()) {
-                out.add(ArrayRedisMessage.NULL_INSTANCE);
-            } else {
-                ArrayRedisMessage arrayRedisMessage = new ArrayRedisMessage(multiBulkReply.data().stream().map(
-                        entry -> new FullBulkStringRedisMessage(ByteBufUtils.toByteBuf(((BulkByteRedisMessage) entry).data()))).collect(Collectors.toList()));
-                out.add(arrayRedisMessage);
-            }
+            out.add(toArrayRedisMessage(multiBulkReply));
         } else {
             throw new CodecException("unknown message type: " + reply);
+        }
+    }
+
+    private ArrayRedisMessage toArrayRedisMessage(MultiBulkRedisMessage multiBulkReply) {
+        if (null == multiBulkReply.data()) {
+            return ArrayRedisMessage.NULL_INSTANCE;
+        } else {
+            ArrayRedisMessage arrayRedisMessage = new ArrayRedisMessage(multiBulkReply.data().stream().map(
+                    entry -> {
+                        if (entry instanceof IntegerRedisMessage) {
+                            return new io.netty.handler.codec.redis.IntegerRedisMessage(((IntegerRedisMessage) entry).data());
+                        } else if (entry instanceof MultiBulkRedisMessage) {
+                            return toArrayRedisMessage((MultiBulkRedisMessage) entry);
+                        } else {
+                            return new FullBulkStringRedisMessage(ByteBufUtils.toByteBuf(((BulkByteRedisMessage) entry).data()));
+                        }
+                    }).collect(Collectors.toList()));
+            return arrayRedisMessage;
         }
     }
 }

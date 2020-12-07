@@ -4,6 +4,9 @@ import com.daicy.redis.command.transaction.MultiState;
 import com.daicy.remoting.transport.netty4.ClientSession;
 import io.netty.channel.Channel;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author: create by daichangya
  * @version: v1.0
@@ -21,6 +24,16 @@ public class RedisClientSession extends ClientSession {
 
     // 复制状态
     private volatile int replstate;          /* replication state if this is a slave */
+
+    // 这个字典记录了客户端所有订阅的频道
+    // 键为频道名字，值为 NULL
+    // 也即是，一个频道的集合
+    private Set<String> pubsubChannels = new HashSet<>();  /* channels a client is interested in (SUBSCRIBE) */
+
+    // 链表，包含多个 pubsubPattern 结构
+    // 记录了所有订阅频道的客户端的信息
+    // 新 pubsubPattern 结构总是被添加到表尾
+    private Set<String> pubsubPatterns = new HashSet<>();  /* patterns a client is interested in (SUBSCRIBE) */
 
     public int getReplstate() {
         return replstate;
@@ -56,6 +69,22 @@ public class RedisClientSession extends ClientSession {
 
     public void setFlags(int flags) {
         this.flags = flags;
+    }
+
+    public Set<String> getPubsubChannels() {
+        return pubsubChannels;
+    }
+
+    public void setPubsubChannels(Set<String> pubsubChannels) {
+        this.pubsubChannels = pubsubChannels;
+    }
+
+    public Set<String> getPubsubPatterns() {
+        return pubsubPatterns;
+    }
+
+    public void setPubsubPatterns(Set<String> pubsubPatterns) {
+        this.pubsubPatterns = pubsubPatterns;
     }
 }
 //
