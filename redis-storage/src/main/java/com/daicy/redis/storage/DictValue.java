@@ -15,11 +15,8 @@ import org.relaxng.datatype.Datatype;
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.AbstractMap;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 
@@ -143,6 +140,14 @@ public class DictValue implements Serializable {
 
     public static Entry<Double, String> score(double score, String value) {
         return new AbstractMap.SimpleEntry<>(score, value);
+    }
+
+    public static DictValue bitset(int... ones) {
+        BitSet bitSet = new BitSet();
+        for (int position : ones) {
+            bitSet.set(position);
+        }
+        return new DictValue(DataType.STRING, new String(bitSet.toByteArray()));
     }
 
     public long timeToLive(Instant now) {
