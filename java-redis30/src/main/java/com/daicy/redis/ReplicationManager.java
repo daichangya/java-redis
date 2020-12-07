@@ -9,12 +9,14 @@ import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.remoting.transport.netty4.ClientSession;
 import com.daicy.remoting.transport.netty4.client.ClientBuilder;
 import com.daicy.remoting.transport.netty4.client.ClientPromise;
+import com.google.common.collect.Lists;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 
@@ -59,7 +61,7 @@ public class ReplicationManager {
 
     public static void replicationFeedSlaves(Request request) {
         DefaultRedisServerContext redisServerContext = DefaultRedisServerContext.getInstance();
-        Set<ClientSession> slaves = redisServerContext.getSlaves();
+        Set<RedisClientSession> slaves = redisServerContext.getSlaves();
         if (CollectionUtils.isEmpty(slaves)) {
             return;
         }
@@ -81,7 +83,7 @@ public class ReplicationManager {
 
     public static void disconnectSlaves() {
         DefaultRedisServerContext redisServerContext = DefaultRedisServerContext.getInstance();
-        Set<ClientSession> slaves = redisServerContext.getSlaves();
+        Set<RedisClientSession> slaves = redisServerContext.getSlaves();
         if (CollectionUtils.isEmpty(slaves)) {
             return;
         }
@@ -95,7 +97,38 @@ public class ReplicationManager {
         DefaultRedisServerContext redisServerContext = DefaultRedisServerContext.getInstance();
         redisServerContext.delClient(redisClientSession);
         redisClientSession.getChannel().close();
+        pubsubUnsubscribeAllChannels(redisClientSession);
+        pubsubUnsubscribeAllPatterns(redisClientSession);
     }
+
+    public static void pubsubUnsubscribeAllChannels(RedisClientSession clientSession) {
+        List<String> channels = Lists.newArrayList(clientSession.getPubsubChannels());
+        for (String channel : channels) {
+            pubsubUnsubscribeChannel(clientSession, channel);
+        }
+    }
+
+    public static void pubsubUnsubscribeChannel(RedisClientSession clientSession,String channel) {
+        DefaultRedisServerContext redisServerContext = DefaultRedisServerContext.getInstance();
+        if (clientSession.getPubsubChannels().remove(channel)) {
+            redisServerContext.getPubsubChannels().get(channel).remove(clientSession.getId());
+        }
+    }
+
+    public static void pubsubUnsubscribeAllPatterns(RedisClientSession clientSession) {
+        List<String> channels = Lists.newArrayList(clientSession.getPubsubPatterns());
+        for (String channel : channels) {
+            patternUnsubscribeChannel(clientSession, channel);
+        }
+    }
+
+    public static void patternUnsubscribeChannel(RedisClientSession clientSession, String channel) {
+        DefaultRedisServerContext redisServerContext = DefaultRedisServerContext.getInstance();
+        if (clientSession.getPubsubPatterns().remove(channel)) {
+            redisServerContext.getPubsubPatterns().get(channel).remove(clientSession.getId());
+        }
+    }
+
 
     public static void replicationSetMaster(String host, String port) {
         DefaultRedisServerContext redisServerContext = DefaultRedisServerContext.getInstance();

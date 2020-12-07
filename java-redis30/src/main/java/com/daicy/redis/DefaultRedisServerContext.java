@@ -4,6 +4,8 @@ import com.daicy.redis.command.DBCommandSuite;
 import com.daicy.redis.command.RedisCommand;
 import com.daicy.redis.context.DBConfig;
 import com.daicy.redis.context.RedisServerContext;
+import com.daicy.redis.event.Event;
+import com.daicy.redis.event.NotificationManager;
 import com.daicy.redis.protocal.RedisMessage;
 import com.daicy.redis.storage.DictFactory;
 import com.daicy.redis.storage.RedisDb;
@@ -45,17 +47,19 @@ public class DefaultRedisServerContext extends AbstractServerContext<RedisClient
     // 字典，键为频道，值为链表
     // 链表中保存了所有订阅某个频道的客户端
     // 新客户端总是被添加到链表的表尾
-    private HashMap<String,List<String>> pubsubChannels = new HashMap<>();  /* Map channels to list of subscribed clients */
+    private HashMap<String, List<String>> pubsubChannels = new HashMap<>();  /* Map channels to list of subscribed clients */
 
-    private HashMap<String,List<String>> pubsubPatterns = new HashMap<>();
+    private HashMap<String, List<String>> pubsubPatterns = new HashMap<>();
 
     private final DBCommandSuite commands = new DBCommandSuite();
 
     private final List<RedisDb> databases = new ArrayList<>();
 
-    private Map<String,String> luaScripts = Maps.newHashMap();
+    private Map<String, String> luaScripts = Maps.newHashMap();
 
     private PersistenceManager persistenceManager;
+
+    private NotificationManager notificationManager;
 
     private final DBConfig dbConfig;
 
@@ -66,9 +70,10 @@ public class DefaultRedisServerContext extends AbstractServerContext<RedisClient
     public DefaultRedisServerContext(DBConfig dbConfig) {
         this.dbConfig = dbConfig;
         instance = this;
+        notificationManager = new NotificationManager(this);
     }
 
-    public static DefaultRedisServerContext getInstance(){
+    public static DefaultRedisServerContext getInstance() {
         return instance;
     }
 
@@ -134,6 +139,7 @@ public class DefaultRedisServerContext extends AbstractServerContext<RedisClient
         RedisCommand redisCommand = getRedisCommand(request.getCommand());
         RedisMessage reply = redisCommand.execute(request);
         propagate(request);
+        notification(request);
         return reply;
     }
 
@@ -142,6 +148,29 @@ public class DefaultRedisServerContext extends AbstractServerContext<RedisClient
             persistenceManager.append(request);
             ReplicationManager.replicationFeedSlaves(request);
         }
+    }
+
+
+    private void notification(Request request) {
+        if (!isReadOnlyCommand(request.getCommand()) && request.getLength() > 1) {
+            publishEvent(notificationManager, request);
+        }
+    }
+
+    private void publishEvent(NotificationManager manager, Request request) {
+        manager.enqueue(createKeyEvent(request));
+        manager.enqueue(createCommandEvent(request));
+    }
+
+
+    private Event createKeyEvent(Request request) {
+        return Event.keyEvent(request.getCommand(), request.getParamStr(0),
+                request.getClientSession().getDictNum());
+    }
+
+    private Event createCommandEvent(Request request) {
+        return Event.commandEvent(request.getCommand(), request.getParamStr(0),
+                request.getClientSession().getDictNum());
     }
 
 

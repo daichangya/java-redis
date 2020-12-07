@@ -5,13 +5,16 @@
 package com.daicy.redis.command.pubsub;
 
 
-import com.daicy.redis.DefaultRedisServerContext;
 import com.daicy.redis.RedisClientSession;
+import com.daicy.redis.ReplicationManager;
 import com.daicy.redis.annotation.Command;
 import com.daicy.redis.annotation.ParamLength;
 import com.daicy.redis.annotation.PubSubAllowed;
 import com.daicy.redis.annotation.ReadOnly;
 import com.daicy.redis.protocal.RedisMessage;
+import com.google.common.collect.Lists;
+
+import java.util.List;
 
 @ReadOnly
 @Command("unsubscribe")
@@ -22,6 +25,11 @@ public class UnsubscribeCommand extends UnSubscriptionSupport {
     private static final String UNSUBSCRIBE = "unsubscribe";
 
 
+    @Override
+    List<String> getChannels(RedisClientSession clientSession) {
+        return Lists.newArrayList(clientSession.getPubsubChannels());
+    }
+
     /* Unsubscribe a client from a channel. Returns 1 if the operation succeeded, or
      * 0 if the client was not subscribed to the specified channel.
      *
@@ -31,11 +39,7 @@ public class UnsubscribeCommand extends UnSubscriptionSupport {
      */
     @Override
     RedisMessage pubsubUnsubscribeChannel(RedisClientSession clientSession, String channel) {
-        DefaultRedisServerContext redisServerContext = DefaultRedisServerContext.getInstance();
-        if (clientSession.getPubsubChannels().remove(channel)) {
-            redisServerContext.getPubsubChannels().get(channel).remove(clientSession.getId());
-        }
-
+        ReplicationManager.pubsubUnsubscribeChannel(clientSession, channel);
         return getRedisMessage(clientSession, channel);
     }
 

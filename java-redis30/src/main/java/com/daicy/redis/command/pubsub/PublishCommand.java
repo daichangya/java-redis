@@ -7,6 +7,7 @@ package com.daicy.redis.command.pubsub;
 
 import com.daicy.redis.DefaultRedisServerContext;
 import com.daicy.redis.GlobPattern;
+import com.daicy.redis.RedisClientSession;
 import com.daicy.redis.Request;
 import com.daicy.redis.annotation.Command;
 import com.daicy.redis.annotation.ParamLength;
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
 
 @Command("publish")
 @ParamLength(2)
-public class PublishCommand implements DBCommand, BaseSubscriptionSupport {
+public class PublishCommand implements DBCommand {
 
   private static final String MESSAGE = "message";
 
@@ -45,7 +46,7 @@ public class PublishCommand implements DBCommand, BaseSubscriptionSupport {
    * 将 message 发送到所有订阅频道 channel 的客户端，
    * 以及所有订阅了和 channel 频道匹配的模式的客户端。
    */
-  private int pubsubPublishMessage(String channel,String message) {
+  public static int pubsubPublishMessage(String channel,String message) {
     DefaultRedisServerContext redisServerContext = DefaultRedisServerContext.getInstance();
     int receivers = 0;
 
@@ -65,6 +66,27 @@ public class PublishCommand implements DBCommand, BaseSubscriptionSupport {
     receivers = receivers + sessionIds.size();
     /* Send to clients listening to matching channels */
     // 将消息也发送给那些和频道匹配的模式
+    receivers = receivers + patternPublish(channel, message, redisServerContext);
+
+    // 返回计数
+    return receivers;
+  }
+
+
+  public static  int publish(DefaultRedisServerContext redisServerContext, List<String> sessionIds, RedisMessage redisMessage) {
+    sessionIds.forEach(sessionId -> {
+      RedisClientSession redisClientSession = redisServerContext.getClient(sessionId);
+      if (null != redisClientSession) {
+        redisClientSession.getChannel().writeAndFlush(redisMessage);
+      }
+    });
+    return sessionIds.size();
+  }
+
+
+  public static int patternPublish(String channel, String message, DefaultRedisServerContext redisServerContext) {
+    int receivers = 0;
+
     Set<Map.Entry<String, List<String>>> channelToSessionIds = redisServerContext.getPubsubPatterns().entrySet().stream()
             .filter(entry -> new GlobPattern(entry.getKey()).match(channel)).collect(Collectors.toSet());
     if (CollectionUtils.isNotEmpty(channelToSessionIds)) {
@@ -80,13 +102,7 @@ public class PublishCommand implements DBCommand, BaseSubscriptionSupport {
         receivers = receivers + clientSessionIds.size();
       }
     }
-
-    // 返回计数
     return receivers;
   }
 
-  @Override
-  public String getTitle() {
-    return MESSAGE;
-  }
 }

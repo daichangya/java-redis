@@ -4,7 +4,6 @@
  */
 package com.daicy.redis.command.pubsub;
 
-import com.daicy.redis.DefaultRedisServerContext;
 import com.daicy.redis.RedisClientSession;
 import com.daicy.redis.protocal.BulkRedisMessage;
 import com.daicy.redis.protocal.IntegerRedisMessage;
@@ -17,16 +16,6 @@ import java.util.List;
 import static com.daicy.redis.protocal.RedisMessageConstants.NULL;
 
 public interface BaseSubscriptionSupport {
-
-    default int publish(DefaultRedisServerContext redisServerContext, List<String> sessionIds, RedisMessage redisMessage) {
-        sessionIds.forEach(sessionId -> {
-            RedisClientSession redisClientSession = redisServerContext.getClient(sessionId);
-            if (null != redisClientSession) {
-                redisClientSession.getChannel().writeAndFlush(redisMessage);
-            }
-        });
-        return sessionIds.size();
-    }
 
     public String getTitle();
 

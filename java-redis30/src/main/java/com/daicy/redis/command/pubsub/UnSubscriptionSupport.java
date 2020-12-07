@@ -25,7 +25,7 @@ public abstract class UnSubscriptionSupport implements BaseSubscriptionSupport, 
         List<String> params = request.getParamsStrList();
         RedisClientSession clientSession = request.getClientSession();
         if (CollectionUtils.isEmpty(params)) {
-            params = Lists.newArrayList(clientSession.getPubsubChannels());
+            params = Lists.newArrayList(getChannels(clientSession));
             if (CollectionUtils.isEmpty(params)) {
                return getRedisMessage(clientSession,null);
             }
@@ -35,6 +35,8 @@ public abstract class UnSubscriptionSupport implements BaseSubscriptionSupport, 
         }
         return new MultiBulkRedisMessage(resultMessage);
     }
+
+    abstract List<String> getChannels(RedisClientSession clientSession);
 
     /* Unsubscribe a client from a channel. Returns 1 if the operation succeeded, or
      * 0 if the client was not subscribed to the specified channel.
