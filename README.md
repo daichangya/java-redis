@@ -5,7 +5,7 @@
 
 [https://zthinker.com/](https://zthinker.com/)
 
-# java-redis
+# MiniRedis (java-redis)
 基于Java实现的 redis-server
 
 ```
